@@ -1,0 +1,48 @@
+# Vendored from OptiPIM experimental/GPA sample_arch/simdram_tech_db.yaml @ c775742
+# ============================================================================
+#  Technology table for SIMDRAM (derived from ISCA’20 SIMDRAM, DDR4-3200)
+#  Values are "defaults"; you can override per corner or per node.
+# ============================================================================
+
+defaults:
+
+  #
+  #  NODE CLASSES  -----------------------------------------------------------
+  #
+  node_class:
+    dram_bank_8k:               # 8-kB row buffer DRAM bank
+      row_bytes: 8 kB
+      t_rcd: 14 cycle
+      t_rp:  14 cycle
+      t_ras: 33 cycle
+      energy_per_access: 250 pJ
+
+    simdram_pum:                    # in-situ bit-serial PuM block
+      peak_gops: 2.048 Gop/s         # 1024 cols × 2 Mb-ops × 1 k rows @ 800 MHz
+      latency: 1 cycle
+      energy_per_op: 0.05 pJ         # energy per operation for PuM
+
+    ddr4_rank_bus:                  # command/data bus at rank level
+      protocol_latency: 6 cycle
+      energy_per_byte: 0.8 pJ        # energy per byte for bus
+
+  #
+  #  LINK CLASSES  -----------------------------------------------------------
+  #
+  link:
+    # Bank ↔ rank bus (vendor interface timing)
+    bank2bus_ddr4:
+      bandwidth: 25.6 GB/s           # 64 bit * 3200 MT/s
+      startup_latency: 3 cycle
+      energy_per_byte: 0.8 pJ
+    
+    # Intra-bank PuM uses DRAM bit-lines → treat as 0-
+    bank2pum_zero:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ
+
+# ------------------------------ process corners ------------------------------
+corners:
+  slow_900mV:  {scale_latency: 1.1, scale_energy: 1.25}
+  fast_700mV:  {scale_latency: 0.9, scale_energy: 0.80}

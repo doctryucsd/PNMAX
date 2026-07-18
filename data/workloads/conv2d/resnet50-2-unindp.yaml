@@ -1,0 +1,33 @@
+Name: conv2d_resnet50_2
+Problem:
+    N: 1
+    K: 64
+    P: 56
+    Q: 56
+    C: 64
+    R: 3
+    S: 3
+    Dilation: [1, 1]
+    Stride: [1, 1]
+Bound:
+    3: ["N": 1, "K": 1, "P": 1, "Q": 8, "C": 1, "R": 1, "S": 1]
+    2: ["N": 1, "K": 1, "P": 7, "Q": 1, "C": 1, "R": 1, "S": 1]
+    1: ["N": 1, "K": 64, "P": 8, "Q": 7, "C": 64, "R": 1, "S": 1]
+    0: ["N": 1, "K": 1, "P": 1, "Q": 1, "C": 1, "R": 3, "S": 3]
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,p,q,k] += In[n,p+r,q+s,c] * F[k,r,s,c]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel # Options: bit-serial, bit-parallel
+    streaming:
+        In: true
+        F: false
+        Out: false
+    sharing:
+        block: true
+        PU: false
+        system: 0
+    interleaving: true

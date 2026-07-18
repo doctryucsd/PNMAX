@@ -1,0 +1,190 @@
+# ============================================================================
+#  GPAM baseline architecture spec: AttAcc  (nominal AttAcc configuration)
+#
+#  Hand-authored companion of the calibrated flat runtime spec.  This
+#  topology + its tech-DB (attacc_tech_db.yaml) carry the hand-calibrated
+#  aggregate unit costs verbatim and lower (via `gpam-lower`) to
+#      data/archs/lowered/baseline/attacc.yaml
+#  byte-semantically; `gpam-lower --arch <this file> --check <that file>`
+#  verifies the equivalence.
+#
+#  Topology (flat hierarchy products verified against the lowered file):
+#      stack0/channel{0..7}/pch{0..1}/bg{0..3}/{bank{0..3}, pu{0..3}}
+#      -> L6 stack x1, L5 channel x8, L4 pch x2, L3 bg x4, L2 bank x4
+#      -> one PU per bank, PAIRWISE at the SAME hierarchy depth
+#         => 256 banks, 256 PUs, banks_per_pu 1
+#  Because PUs are 1:1-paired with the leaf banks at the same depth, the
+#  leaf level kind is taken from the MEM segment (`bank`, count 4); PUs do
+#  not form a hierarchy level of their own.  The root segment `stack0` is a pure path token (LEGAL level kind
+#  `stack`, no node placed on it), so it lowers to the explicit L6 stack
+#  count-1 level of the flat file.  The device-side hub bus `iobus` (the
+#  stack's buffer-die / TSV interface) therefore lives UNDER the stack
+#  (hier stack0/iobus); bus segments never form hierarchy levels and the
+#  bus sits on no PU/MEM hierarchy path.
+#
+#  Edge-direction convention: the vendored parser stores edges FORWARD-ONLY
+#  (`attr: {direction: both}` is a silent no-op), so the store/writeback path
+#  and the host upstream are authored as EXPLICIT reverse edges with their
+#  own link classes; one link class per ordered (src, dst) pair.  For AttAcc
+#  store != load (energy 0 vs 1/32 pJ/B): the two directions are distinct
+#  calibrated aggregates and MUST stay distinct classes.
+#
+#  Cost-placement convention (same as hbm_pim - see that header for the full
+#  text): full load aggregate on MEM->BUF, store on BUF->MEM, RF<->PU free;
+#  host aggregate on HOST<->iobus (the only finite-bandwidth link);
+#  bank<->bank routed bank -> iobus -> bank with the full aggregate on the
+#  outbound hop, the free bank2bank_down return fan-out making every MEM/PU
+#  forward-reachable from the host (host -> iobus -> bank -> rf -> pu).
+#
+#  Nominal-configuration reconciliation (each mismatch between the nominal
+#  AttAcc configuration and this calibrated model was tested empirically at the flat level by
+#  changing the single field and comparing analytical-model outputs):
+#    - PU count: the nominal configuration lists 1024; modeled system = 256 PUs = one HBM
+#      stack (8 ch x 2 pch x 4 bg x 4 banks).  1024 = the 4-stack AttAcc
+#      system; the flat file models a single stack (L6 stack count 1).
+#      Empirically, restructuring to 4 stacks leaves fixed-mapping outputs
+#      unchanged but makes the seeded random search sample DIFFERENT
+#      mappings (60/60 trace contents differ at a fixed seed) - search-
+#      derived results change, so the calibrated single-stack topology behind the
+#      reference results is KEPT.
+#    - Register file / PU: the nominal configuration lists 8KB; calibrated cache_bytes is 512B.
+#      Empirically, 512B -> 8KB CHANGES computed results - 33 of 100
+#      searched FC mappings shift latency AND energy (one example mapping:
+#      latency 7128 -> 6760 cycles, energy 2517120 -> 2499456 pJ; cache hits
+#      0 -> 736).  Calibrated 512 B KEPT.
+#    - Core frequency 666 MHz, row 1 kB, bank 16 MB, burst 4, BG size 4
+#      (L3 bg count 4): consistent with the nominal configuration (attacc is the only baseline
+#      that models an explicit bg level).
+#    - No total_area_mm2: the flat reference carries no area field, so this
+#      spec's meta deliberately omits it (lowering omits the key).
+# ============================================================================
+
+tech: attacc_tech_db.yaml             # calibrated aggregate costs live there
+
+meta:
+  name: attacc                        # lowers to flat `name`
+  # PU clock; all cycle-denominated tech-DB latencies are PU cycles.
+  # Provenance: lowered/baseline/attacc.yaml specs.pu_frequency 666Mhz
+  # (nominal core frequency 666MHz - MATCH).
+  clock: 666 MHz
+  # NO total_area_mm2 here: absent in the flat reference (see header).
+
+# ----------------------------------------------------------------------------
+#  Replicated nodes: 8 channels x 2 pseudo-channels x 4 bank groups
+#                    x {4 banks, 4 PUs, 4 register files}
+#  Bank/PU linear index I = ((c*2 + p)*4 + g)*4 + b   (0..255)
+# ----------------------------------------------------------------------------
+macros:
+  REPLICATE:
+
+    # DRAM banks: 4 per bank group, 256 total
+    bank:
+      vars:
+        c: 0:7
+        p: 0:1
+        g: 0:3
+        b: 0:3
+      id_pattern: "bank{((c*2 + p)*4 + g)*4 + b}"
+      of:
+        type: mem
+        class: attacc_bank
+      hier_pattern: "stack0/channel{c}/pch{p}/bg{g}/bank{b}"
+
+    # Per-bank PUs (buffer-die MAC units): SAME depth as their banks
+    pu:
+      vars:
+        c: 0:7
+        p: 0:1
+        g: 0:3
+        b: 0:3
+      id_pattern: "pu{((c*2 + p)*4 + g)*4 + b}"
+      of:
+        type: pu
+        class: attacc_pu
+      hier_pattern: "stack0/channel{c}/pch{p}/bg{g}/pu{b}"
+
+    # Per-PU register file (BUF): child of its PU, NOT a hierarchy level
+    rf:
+      vars:
+        c: 0:7
+        p: 0:1
+        g: 0:3
+        b: 0:3
+      id_pattern: "rf{((c*2 + p)*4 + g)*4 + b}"
+      of:
+        type: buffer
+        class: attacc_regfile
+      hier_pattern: "stack0/channel{c}/pch{p}/bg{g}/pu{b}/rf"
+
+# ----------------------------------------------------------------------------
+#  Explicit nodes: device-side hub bus + host
+# ----------------------------------------------------------------------------
+nodes:
+  # Stack I/O hub (buffer-die / TSV interface).  Lives UNDER the stack
+  # segment so `stack0` itself stays a pure L6 level token; bus segments
+  # never form hierarchy levels.
+  iobus:
+    type: bus
+    hier_id: stack0/iobus
+  # HOST: single node with its own root hier_id (NOT a prefix of device paths).
+  host:
+    type: host
+    hier_id: host
+
+# ----------------------------------------------------------------------------
+#  Edges (all costs come from the link classes in the tech-DB)
+# ----------------------------------------------------------------------------
+edges:
+
+  # -- load path: bank i -> register file of PU i (1:1)  [full aggregate hop]
+  - src: bank{i}
+    dst: rf{i}
+    link: bank2rf_load
+    mode: template
+    range:
+      i: 0:255
+
+  # -- store path: EXPLICIT reverse edges; store != load for AttAcc
+  - src: rf{i}
+    dst: bank{i}
+    link: rf2bank_store
+    mode: template
+    range:
+      i: 0:255
+
+  # -- register file <-> PU: free hops (aggregates sit on the MEM<->BUF hop)
+  - src: rf{i}
+    dst: pu{i}
+    link: rf2pu
+    mode: template
+    range:
+      i: 0:255
+  - src: pu{i}
+    dst: rf{i}
+    link: pu2rf
+    mode: template
+    range:
+      i: 0:255
+
+  # -- host link: downstream + EXPLICIT upstream (only finite-bw link class;
+  #    the host node carries no other outgoing edge)
+  - src: host
+    dst: iobus
+    link: host_link
+    mode: cartesian
+  - src: iobus
+    dst: host
+    link: host_link_up
+    mode: cartesian
+
+  # -- host/bus-mediated bank<->bank sharing (flat bank_to_bank_transfer):
+  #    bank -> iobus carries the full aggregate; the free iobus -> bank
+  #    return hop doubles as the host-reachability fan-out
+  - src: bank*
+    dst: iobus
+    link: bank2bank
+    mode: cartesian
+  - src: iobus
+    dst: bank*
+    link: bank2bank_down
+    mode: cartesian

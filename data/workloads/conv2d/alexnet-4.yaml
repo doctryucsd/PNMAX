@@ -1,0 +1,32 @@
+Name: conv2d_alexnet_4
+Problem:
+    N: 1
+    K: 256
+    P: 13
+    Q: 13
+    C: 256
+    R: 3
+    S: 3
+    Dilation: [1, 1]
+    Stride: [1, 1]
+Bound:
+    3: ["N": 1, "K": 1, "P": 1, "Q": 13, "C": 1, "R": 1, "S": 1]
+    2: ["N": 1, "K": 8, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+    1: ["N": 1, "K": 32, "P": 1, "Q": 1, "C": 256, "R": 3, "S": 3]
+    0: ["N": 1, "K": 1, "P": 13, "Q": 1, "C": 1, "R": 1, "S": 1]
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,p,q,k] += In[n,p+r,q+s,c] * F[k,r,s,c]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel
+    streaming:
+        In: true
+        F: false
+        Out: false
+    sharing:
+        block: true
+        PU: true
+        system: 0

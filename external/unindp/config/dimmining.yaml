@@ -1,0 +1,60 @@
+# data precision
+data_pr: 16 # bit
+
+# device level
+ro: 32768
+co: 128
+co_w: 64 # bit
+bg: 4
+ba: 4
+de_pu:
+- 0
+de_pu_inbuf: 0 # 0
+de_pu_bf: 0 # 0
+de_pu_bf_rl: 1 
+de_pu_bf_wl: 1 
+de_pu_w: # pu_parallelism, MM(oh,ow,v)
+- 1
+- 1
+- 16
+de_gb: 0 # 单位：bit，总量为2KB
+de_gb_rl: 1
+de_gb_wl: 1
+
+# rank level: 8 device (ddr4)
+de: 8
+de_w: 8
+ra_pu: 4
+ra_pu_inbuf: 131072 # 16KB
+ra_pu_outbuf: 131072 # 0
+ra_pu_bf_rl: 1
+ra_pu_bf_wl: 1
+
+ra_gb: 0 # 单位：bit，总量为 16 KB TODO: 之后考虑下把ra的输出也存在gb中是否有可能实现
+ra_gb_rl: 1
+ra_gb_wl: 1 # 写操作后，影响下一次读操作/写操作的时间？
+
+# channel level (ddr4)
+ra: 2
+
+# system level
+ch: 32 # FIXME: 20 DIMM
+ch_w: 64
+host_w: 
+host_t: 
+host_reduce_t: 
+
+# Timing config (from ddr4_4Gb_x8, 16 bank, 8 devices, 2 ranks, 20 channels)
+tCCDL: 6
+tCCDS: 4
+# TODO: check if the RCD is the same
+tRCDWR: 17
+tRCDRD: 17
+tRP: 17
+tWR: 18
+tRTPL: 9
+tWTRL: 9
+tRTRS: 1
+RL: 17
+WL: 12
+BL: 8

@@ -1,0 +1,1 @@
+Name,OpType,Optimal_lat,Optimal_cmd,Optimal_pu_DRAM_access,Optimal_host_DRAM_access,Optimal_row_change,Baseline_lat,Baseline_cmd,Baseline_pu_DRAM_access,Baseline_host_DRAM_access,Baseline_row_change

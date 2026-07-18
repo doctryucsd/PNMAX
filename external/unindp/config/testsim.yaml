@@ -1,0 +1,61 @@
+# time interval: 1.25ns
+# structure:
+
+# data precision
+data_pr: 16 # unit: bit
+
+# device level
+ro: 16384
+co: 64
+co_w: 256 # unit: bit
+bg: 4
+ba: 4
+de_pu: 
+- 16
+- 8
+de_pu_bf: 2048 # 0
+de_pu_inbuf: 16384 # 0
+de_pu_bf_rl: 1 # 
+de_pu_bf_wl: 1 # 
+de_pu_w: # pu_parallelism, MM(oh,ow,v)
+- 1
+- 1
+- 16
+de_gb: 16384 # unit: bit, total is 2KB
+de_gb_rl: 1
+de_gb_wl: 1
+
+# rank level: 8 devices (ddr4)
+de: 8
+de_w: 16
+ra_pu: 4 # At most 1 PU per device
+ra_pu_bf: 2048 # 0
+ra_pu_bf_rl: 1
+ra_pu_bf_wl: 1
+
+ra_gb: 131072 # unit: bit, =16 KB 
+ra_gb_wl: 1 # After write operation, affects the next read/write operation time?
+
+# channel level (ddr4)
+ra: 1
+
+# system level
+ch: 64 # 2*2*16
+ch_w: 64
+host_w: 
+host_t: 
+host_reduce_t: 
+
+# Timing config (from gddr6)
+tCCDL: 6
+tCCDS: 4
+tRCDWR: 16
+tRCDRD: 26
+tRP: 26
+tWR: 26
+tRTPL: 4
+tWTRL: 11
+tRTRS: 1
+RL: 24
+WL: 6
+BL: 16

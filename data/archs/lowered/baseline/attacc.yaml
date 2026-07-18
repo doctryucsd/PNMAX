@@ -1,0 +1,32 @@
+name: attacc
+
+cache:
+  mode: regfile
+  vector_width_bits: 256
+
+specs:
+  row_bytes: 1KB
+  bank_bytes: 16MB
+  cache_bytes: 512B
+  banks_per_pu: 1
+  pu_frequency: 666Mhz
+  simd_lanes: 16
+
+hierarchy:
+  L2: { kind: bank, count: 4 }
+  L3: { kind: bg, count: 4 }
+  L4: { kind: pch, count: 2 }
+  L5: { kind: channel, count: 8 }
+  L6: { kind: stack, count: 1 }
+
+bandwidth:
+  host_device: 512GB/s
+
+unit_costs:
+  bank_to_pu_load: { latency: 2.0, energy: 1 }
+  pu_to_bank_store: { latency: 2.0, energy: 0 }
+  host_pu_transfer: { latency: 4, energy: 4 }
+  bank_to_bank_transfer: { latency: 100, energy: 100 }
+  host_bank_row_conflict: { latency: 31, energy: 31 }
+  pu_compute: { latency: 4.0, energy: 66 }
+  row_change: { latency: 25, energy: 25 }

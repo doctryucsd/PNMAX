@@ -1,0 +1,217 @@
+# ============================================================================
+#  GPAM baseline architecture spec: HBM-PIM  (nominal baseline configuration)
+#
+#  Hand-authored companion of the calibrated flat runtime spec.  This
+#  topology + its tech-DB (hbm_pim_tech_db.yaml) carry the hand-calibrated
+#  aggregate unit costs verbatim and lower (via `gpam-lower`) to
+#      data/archs/lowered/baseline/hbm_pim.yaml
+#  byte-semantically; `gpam-lower --arch <this file> --check <that file>`
+#  verifies the equivalence.
+#
+#  Topology (flat hierarchy products verified against the lowered file):
+#      hbm/channel{0..63}/rank0/chip0/{pu{0..7}, bank{0..15}}
+#      -> L5 channel x64, L4 rank x1, L3 chip x1, L2 pu x8      = 512 PUs
+#      -> 16 banks per chip, banks (2u, 2u+1) pairwise-load into pu u
+#         => banks_per_pu 2, 1024 banks total
+#  Singleton levels (rank, chip) are spelled as literal path segments
+#  (rank0/chip0) because a graph cannot otherwise represent a count-1 level.
+#  The root segment `hbm` names the root BUS node (not a level kind), so the
+#  lowered hierarchy starts at L5=channel, matching the flat file.
+#  NOTE: hierarchy segments spell the full level-kind tokens (`channel{c}`,
+#  not a `ch{c}` shorthand), because lowering derives `hierarchy.L*.kind`
+#  from the segment token and the flat parser only accepts
+#  {pu,bank,bg,chip,pch,rank,channel,stack}.
+#
+#  Doubled-row convention: HBM-PIM has two banks connected to one PU, which
+#  loads from the two banks in an interleaved fashion; the modeled HBM-PIM
+#  row size is doubled to reflect the interleaving behavior.  The doubling is
+#  STRUCTURAL, not baked into row_bytes: row_bytes stays the physical 1 KiB
+#  per bank; the 2-banks-per-PU pairing is encoded by the two load-edge
+#  templates below, lowers to specs.banks_per_pu=2, and the runtime divides
+#  per-PU row usage by banks_per_pu (analytical_model.py:1136, :1170-1175).
+#
+#  Edge-direction convention: the vendored parser stores edges FORWARD-ONLY
+#  (`attr: {direction: both}` is a silent no-op), so the store/writeback path
+#  and the host upstream are authored as EXPLICIT reverse edges with their own
+#  link classes; one link class per ordered (src, dst) pair.
+#
+#  Cost-placement convention: each per-operation transfer aggregate sits on
+#  exactly ONE hop of its path; every other hop of that path is free
+#  (bandwidth INF / 0 cycle / 0 pJ):
+#    - load   : full aggregate on MEM->BUF, BUF->PU free
+#    - store  : full aggregate on BUF->MEM, PU->BUF free
+#    - host   : full aggregate on HOST->bus (down) and bus->HOST (up); the
+#               host link is the ONLY link class with a finite bandwidth
+#               (-> bandwidth.host_device), everything else is INF.  The
+#               host node's outgoing edges carry ONLY the host_link class
+#               (gpam-lower requires them finite and uniform).
+#    - b2b    : host/bus-mediated bank<->bank sharing (flat
+#               bank_to_bank_transfer), routed bank -> root bus -> bank
+#               (single hub intermediate): full aggregate on the outbound
+#               bank->bus hop; the free bus->bank return hop
+#               (bank2bank_down) doubles as the structural fan-out that
+#               makes every MEM/PU forward-reachable from the host
+#               (host -> bus -> bank -> rf -> pu; the parser is
+#               forward-only, so reachability needs these DOWN edges)
+#
+#  Nominal-configuration reconciliation (each mismatch between the nominal
+#  baseline configuration and this calibrated model was tested empirically at the flat level by
+#  changing the single field and comparing analytical-model outputs):
+#    - PU count: the nominal configuration lists "128 x 16"; modeled system = 512 PUs x 16 SIMD
+#      lanes (64ch x 8).  No flat restructure reproduces "128 x 16"; the
+#      modeled 512 is the UniNDP-validated configuration.  Documented
+#      ambiguity, calibrated topology kept.
+#    - Core frequency: the nominal configuration lists 400 MHz; calibrated PU clock is 300 MHz.
+#      Empirically NO effect on any reported metric (26-workload matrix,
+#      plain+cache: zero diffs; specs.pu_frequency has no runtime consumer),
+#      but 300 MHz is kept: meta.clock denominates every calibrated cycle
+#      latency in the tech-DB, and the UniNDP validation converts simulator
+#      ticks at the hard-coded 300 MHz (src/pnmax/simulators/unindp/sim.py).
+#      The nominal 400 MHz matches the PPA template-generator clock
+#      (data/ppa/generate_arch_from_template.py), not the calibrated
+#      baseline.
+#    - Register file 512 B, row 1 kB, bank 16 MB, burst 4 (= 16 lanes x 16
+#      bit / 64-bit column): consistent with the nominal configuration.
+#    - Bank-group size 4: hbm_pim's flat hierarchy models no bg level; BG is
+#      folded into the per-chip bank count.
+# ============================================================================
+
+tech: hbm_pim_tech_db.yaml            # calibrated aggregate costs live there
+
+meta:
+  name: hbm_pim                       # lowers to flat `name`
+  # PU clock; all cycle-denominated tech-DB latencies are PU cycles.
+  # Provenance: lowered/baseline/hbm_pim.yaml specs.pu_frequency 300Mhz
+  # (nominal 400 MHz - kept calibrated, see header).
+  clock: 300 MHz
+  # Provenance: lowered/baseline/hbm_pim.yaml total_area_mm2 555.349572
+  # (metadata only, not consumed by the runtime; FORMAT.md).
+  total_area_mm2: 555.349572
+
+# ----------------------------------------------------------------------------
+#  Replicated nodes: 64 channels x {16 banks, 8 PUs, 8 register files}
+# ----------------------------------------------------------------------------
+macros:
+  REPLICATE:
+
+    # DRAM banks: 16 per channel (2 per PU), 1024 total
+    bank:
+      vars:
+        c: 0:63
+        b: 0:15
+      id_pattern: "bank{c*16 + b}"
+      of:
+        type: mem
+        class: hbm_pim_bank
+      hier_pattern: "hbm/channel{c}/rank0/chip0/bank{b}"
+
+    # FP16 SIMD PUs: 8 per channel, 512 total
+    pu:
+      vars:
+        c: 0:63
+        u: 0:7
+      id_pattern: "pu{c*8 + u}"
+      of:
+        type: pu
+        class: hbm_pim_pu
+      hier_pattern: "hbm/channel{c}/rank0/chip0/pu{u}"
+
+    # Per-PU register file (BUF): child of its PU, NOT a hierarchy level
+    rf:
+      vars:
+        c: 0:63
+        u: 0:7
+      id_pattern: "rf{c*8 + u}"
+      of:
+        type: buffer
+        class: hbm_pim_regfile
+      hier_pattern: "hbm/channel{c}/rank0/chip0/pu{u}/rf"
+
+# ----------------------------------------------------------------------------
+#  Explicit nodes: root bus + host
+# ----------------------------------------------------------------------------
+nodes:
+  # Device-side root; its hier segment (`hbm`) is NOT a level kind, so it adds
+  # no hierarchy level (flat hbm_pim tops out at L5 channel).
+  hbm:
+    type: bus
+    hier_id: hbm
+  # HOST: single node with its own root hier_id (NOT a prefix of device
+  # paths, so device levels do not shift).  First HOST-kind node in the repo.
+  host:
+    type: host
+    hier_id: host
+
+# ----------------------------------------------------------------------------
+#  Edges (all costs come from the link classes in the tech-DB)
+# ----------------------------------------------------------------------------
+edges:
+
+  # -- load path: banks (2u, 2u+1) -> register file of pu u  [aggregate hop]
+  - src: bank{c*16 + 2*u}
+    dst: rf{c*8 + u}
+    link: bank2rf_load
+    mode: template
+    range:
+      c: 0:63
+      u: 0:7
+  - src: bank{c*16 + 2*u + 1}
+    dst: rf{c*8 + u}
+    link: bank2rf_load
+    mode: template
+    range:
+      c: 0:63
+      u: 0:7
+
+  # -- store path: EXPLICIT reverse edges (forward-only parser)  [aggregate]
+  - src: rf{c*8 + u}
+    dst: bank{c*16 + 2*u}
+    link: rf2bank_store
+    mode: template
+    range:
+      c: 0:63
+      u: 0:7
+  - src: rf{c*8 + u}
+    dst: bank{c*16 + 2*u + 1}
+    link: rf2bank_store
+    mode: template
+    range:
+      c: 0:63
+      u: 0:7
+
+  # -- register file <-> PU: free hops (aggregates sit on the MEM<->BUF hop)
+  - src: rf{i}
+    dst: pu{i}
+    link: rf2pu
+    mode: template
+    range:
+      i: 0:511
+  - src: pu{i}
+    dst: rf{i}
+    link: pu2rf
+    mode: template
+    range:
+      i: 0:511
+
+  # -- host link: downstream + EXPLICIT upstream (only finite-bw link class;
+  #    the host node carries no other outgoing edge)
+  - src: host
+    dst: hbm
+    link: host_link
+    mode: cartesian
+  - src: hbm
+    dst: host
+    link: host_link_up
+    mode: cartesian
+
+  # -- host/bus-mediated bank<->bank sharing (flat bank_to_bank_transfer):
+  #    bank -> root bus carries the full aggregate; the free bus -> bank
+  #    return hop doubles as the host-reachability fan-out
+  - src: bank*
+    dst: hbm
+    link: bank2bank
+    mode: cartesian
+  - src: hbm
+    dst: bank*
+    link: bank2bank_down
+    mode: cartesian

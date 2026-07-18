@@ -1,0 +1,70 @@
+# Vendored from OptiPIM experimental/GPA sample_arch/simdram.yaml @ c775742
+# ============================================================================
+#  SIMDRAM – 1 rank, 8 banks, 1 in-situ PuM per bank
+#  FILE CONTAINS *NO* NUMERIC LAT/ENERGY DATA.
+#  Those come from  simdram_tech_db.yaml  via the   class:  and  link:  tags.
+# ============================================================================
+
+tech: simdram_tech_db.yaml          # ← merge this tech-DB after macro expansion
+
+meta:                               # arbitrary global key-values
+  clock: 800MHz                     # single clock domain
+  name: SIMDRAM_8Gb_rank0
+  process: "16nm"
+  voltage: 0.9V
+  comment: "baseline PVT corner"
+
+# ---------------------------------------------------------------------------
+#  MACROS  – REPLICATE expands 1-D index ranges:  bank0 … bank7
+# ---------------------------------------------------------------------------
+
+macros:
+  REPLICATE:
+    # -------------------------------------------------------------------------
+    #  8 identical DRAM banks
+    # -------------------------------------------------------------------------
+    bank:
+      vars:
+        i: 0:7                  # index variable  i = 0 … 7
+      of: &BANK
+        type: mem
+        class: dram_bank_8k
+      hier_pattern: "rank_bus/bank{i}"
+      
+    # -------------------------------------------------------------------------
+    #  8 in-situ PuM compute blocks (one per bank)
+    # -------------------------------------------------------------------------
+    pum:
+      vars:
+        i: 0:7
+      of: &PUM
+        type: pu
+        class: simdram_pum
+      hier_pattern: "rank_bus/bank{i}/pum{i}"
+
+# ---------------------------------------------------------------------------
+#  MANUALLY WRITTEN NODES
+# ---------------------------------------------------------------------------
+nodes:
+  rank_bus:                         # shared DDR4 rank bus
+    type: bus
+    class: ddr4_rank_bus
+    hier_id: "rank_bus"         # unique ID for this node
+
+# ---------------------------------------------------------------------------
+#  EDGES – EACH ENTRY GENERATES MANY CONCRETE EDGES AFTER WILDCARD EXPANSION
+# ---------------------------------------------------------------------------
+edges:
+  # Broadcast: every bank connects to rank_bus (Cartesian product)
+  - src: bank*         # wildcard → all bank0 … bank7
+    dst: rank_bus
+    link: bank2bus_ddr4  # link class → tech DB numbers
+    mode: cartesian
+    attr: {direction: both}  # optional attributes
+
+  # Pairwise: bank{i} <---> pum{i}
+  - src: bank*
+    dst: pum*
+    link: bank2pum_zero
+    mode: pairwise       # connect only matching indices
+    attr: {direction: both}  # optional attributes

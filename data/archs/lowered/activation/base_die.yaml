@@ -1,0 +1,60 @@
+# Generated from template: data/archs/lowered/baseline/hbm_pim.yaml
+# Inputs: burst_len=4, buffer_size=512B, h_mat=16, v_mat=32, num_pu=8, interconnect=host
+# Latencies are stored in PU cycles; energies are stored in pJ.
+# host_pu_transfer repriced per 64-bit column (model_audit.md F1): latency 20 -> 5, energy 295.877 -> 73.969 (/4).
+name: hbm_pim
+cache:
+  mode: regfile
+  vector_width_bits: 256
+specs:
+  row_bytes: 1KB
+  bank_bytes: 16MB
+  cache_bytes: 512B
+  banks_per_pu: 2
+  pu_frequency: 400Mhz
+  simd_lanes: 16
+  add_tree_width: 32
+hierarchy:
+  L2:
+    kind: pu
+    count: 8
+  L3:
+    kind: chip
+    count: 1
+  L4:
+    kind: rank
+    count: 1
+  L5:
+    kind: channel
+    count: 64
+bandwidth:
+  host_device: 670MB/s
+unit_costs:
+  bank_to_pu_load:
+    latency: 18
+    energy: 132.104
+  pu_to_bank_store:
+    latency: 30
+    energy: 469.075
+  host_pu_transfer:
+    latency: 5
+    energy: 73.969
+  bank_to_bank_transfer:
+    latency: 72
+    energy: 847.223
+  host_bank_row_conflict:
+    latency: 28
+    energy: 336.972
+  pu_compute:
+    latency: 1
+    energy: 71.394
+  row_change:
+    latency: 12
+    energy: 336.972
+  base_die:
+    # Cost of one add-tree pass (one 32-wide vector op), from the corresponding PU:
+    # pu_postroute_22nm_cleaned.csv row simd_lanes = add_tree_width = 32 @ tck 2.5 ns
+    # (pu_frequency 400 MHz) -> 130.422619 pJ, 1 cycle/pass. (model_audit.md F2)
+    latency: 1
+    energy: 130.423
+total_area_mm2: 61.955253

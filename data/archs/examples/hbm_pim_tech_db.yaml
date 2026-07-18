@@ -1,0 +1,76 @@
+# Vendored from OptiPIM experimental/GPA sample_arch/hbm_pim_tech_db.yaml @ c775742
+# ============================================================================
+#  Technology numbers for Samsung “Aquabolt-XL” HBM-PIM
+#  (all quantities include units so pint can parse them)
+# ============================================================================
+
+defaults:
+
+  # ────────────────────────── node classes ────────────────────────────────
+  node_class:
+
+    # cross-bar on the logic base-die (one per DRAM die)
+    hbm_die_xbar:
+      ports:              16
+      switch_latency:     1cycle
+      energy_per_byte:    0.15pJ        # per routed byte
+
+    # DRAM bank
+    hbm_bank:
+      row_bytes:          2kB
+      t_rcd:              14cycle
+      t_rp:               13cycle
+      t_ras:              33cycle
+      capacity:           2MiB          # typical HBM2 bank size
+      energy_per_access:  60pJ
+
+    # FP16 PIM unit (MAC array)
+    hbm_alu:
+      peak_gops:          256Gop/s      # one vector per 0.5 ns @1.2 GHz
+      latency_per_op:     1cycle
+      energy_per_op:      0.5pJ
+
+    # vertical TSV bus that all dies share
+    hbm_tsv_bus:
+      protocol_latency:   4cycle
+      energy_per_byte:    0.30pJ
+
+  # ────────────────────────── link classes ────────────────────────────────
+  link:
+
+    # die cross-bar ↔ TSV bus   (Pearl-TSV, 64 GB/s per die, paper Fig. 6)
+    die2tsv:
+      bandwidth:          64GB/s
+      startup_latency:    5cycle
+      energy_per_byte:    0.30pJ
+
+    # die cross-bar ↔ local bank (internal logic bus, paper Fig. 4)
+    die2bank:
+      bandwidth:          1GB/s
+      startup_latency:    2cycle
+      energy_per_byte:    0.20pJ
+
+    # bank ↔ its shared ALU (bit-line coupling, effectively free)
+    bank2alu:
+      bandwidth:          2GB/s
+      startup_latency:    0cycle
+      energy_per_byte:    0pJ
+
+# ----------------------------------------------------------------------------
+#  Optional PVT corners  (slow/fast process examples)
+# ----------------------------------------------------------------------------
+corner:
+
+  ss:            # slow-slow: lower BW, higher energy
+    scale:
+      bandwidth:         0.85     # −15 %
+      energy_per_byte:   1.25     # +25 %
+      energy_per_op:     1.25
+      energy_per_access: 1.25
+
+  ff:            # fast-fast: higher BW, lower energy
+    scale:
+      bandwidth:         1.10     # +10 %
+      energy_per_byte:   0.90
+      energy_per_op:     0.90
+      energy_per_access: 0.90

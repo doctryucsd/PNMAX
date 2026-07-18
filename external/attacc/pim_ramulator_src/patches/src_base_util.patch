@@ -1,0 +1,12 @@
+diff --git a/src/base/utils.h b/src/base/utils.h
+index 2ec74a7..fc4edbc 100644
+--- a/src/base/utils.h
++++ b/src/base/utils.h
+@@ -3,6 +3,7 @@
+ 
+ #include <string>
+ #include <vector>
++#include <cstdint>
+ 
+ namespace Ramulator {
+ 

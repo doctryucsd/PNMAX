@@ -1,0 +1,36 @@
+# Build outputs and fetched sources for vendored external tools — never committed.
+# The source snapshots themselves ARE tracked; only build artefacts and
+# setup.sh-fetched trees are ignored here.
+
+# Python caches
+**/__pycache__/
+*.pyc
+
+# --- attacc (Ramulator2 C++ build) ---
+# ramulator2 is fetched + prepared + built by setup.sh; keep it out of git.
+attacc/ramulator2/build/
+attacc/ramulator2/ext/
+attacc/ramulator2/*.so
+attacc/ramulator2/ramulator2
+attacc/ramulator2/log/
+attacc/ramulator2/trace_gen/*.trace
+attacc/*.out
+
+# --- cacti (make build) ---
+cacti/**/obj_dbg/
+cacti/**/obj_opt/
+cacti/**/cacti
+cacti/**/*.o
+
+# --- dreamram (per-run outputs; data/ppa/generate_dram_lookup_csvs.py writes
+# them during PPA generation and generate_ppa.sh clears them) ---
+dreamram/data/
+
+# --- cinm (MLIR build; built by default, skip with --without-cinm) ---
+# Public LLVM is fetched into third-party/llvm and built out-of-source.
+cinm/third-party/llvm/
+cinm/build/
+cinm/**/build/
+
+# NB: unindp baseline-derivation runs write to an external scratch WORKDIR
+# (never inside external/unindp), so no unindp build artefacts are ignored here.

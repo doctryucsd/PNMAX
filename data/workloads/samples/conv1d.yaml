@@ -1,0 +1,33 @@
+Name: conv1d
+Problem:
+    N: 2
+    K: 1
+    P: 6
+    Q: 1
+    C: 1
+    R: 8
+    S: 1
+    Dilation: [1, 1]
+    Stride: [1, 1]
+Bound:
+    3: ["N": 1, "K": 1, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+    2: ["N": 1, "K": 1, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+    1: ["N": 2, "K": 1, "P": 2, "Q": 1, "C": 1, "R": 2, "S": 1]
+    0: ["N": 1, "K": 1, "P": 3, "Q": 1, "C": 1, "R": 4, "S": 1]
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,p,q,k] += In[n,p+r,q+s,c] * F[k,r,s,c]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel # Options: bit-serial, bit-parallel
+    streaming:
+        In: true
+        F: false
+        Out: false
+    sharing:
+        block: true
+        PU: false
+        system: 0
+    interleaving: true

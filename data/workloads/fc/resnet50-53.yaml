@@ -1,0 +1,30 @@
+Name: fc_resnet50_53
+Problem:
+    N: 1
+    K: 1000
+    P: 1
+    Q: 1
+    C: 2048
+    R: 1
+    S: 1
+Bound:
+    3: ["N": 1, "K": 10, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+    2: ["N": 1, "K": 1, "P": 1, "Q": 1, "C": 8, "R": 1, "S": 1]
+    1: ["N": 1, "K": 10, "P": 1, "Q": 1, "C": 256, "R": 1, "S": 1]
+    0: ["N": 1, "K": 10, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,k] += In[n,c] * F[k,c]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel
+    streaming:
+        In: true
+        F: false
+        Out: true
+    sharing:
+        block: false
+        PU: false
+        system: 0

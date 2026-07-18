@@ -1,0 +1,33 @@
+name: hbm_pim
+
+cache:
+  mode: regfile
+  vector_width_bits: 256
+
+specs:
+  row_bytes: 1KB
+  bank_bytes: 16MB
+  cache_bytes: 512B
+  banks_per_pu: 2
+  pu_frequency: 300Mhz
+  simd_lanes: 16
+
+hierarchy:
+  L2: { kind: pu, count: 8 }
+  L3: { kind: chip, count: 1 }
+  L4: { kind: rank, count: 1 }
+  L5: { kind: channel, count: 64 }
+
+bandwidth:
+  host_device: 670MB/s
+
+unit_costs:
+  bank_to_pu_load: { latency: 10.0, energy: 80.94 }
+  pu_to_bank_store: { latency: 10.0, energy: 80.94 }
+  host_pu_transfer: { latency: 2, energy: 80.94 }
+  bank_to_bank_transfer: { latency: 630, energy: 916.642 }
+  host_bank_row_conflict: { latency: 25, energy: 336.911 }
+  pu_compute: { latency: 20.0, energy: 58.624 }
+  row_change: { latency: 25, energy: 336.911 }
+
+total_area_mm2: 555.349572

@@ -1,0 +1,30 @@
+Name: bmm_llama512_3
+Problem:
+    N: 32
+    K: 128
+    P: 512
+    Q: 1
+    C: 128
+    R: 1
+    S: 1
+Bound:
+    3: ["N": 16, "K": 1, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+    2: ["N": 2, "K": 4, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+    1: ["N": 1, "K": 32, "P": 32, "Q": 1, "C": 128, "R": 1, "S": 1]
+    0: ["N": 1, "K": 1, "P": 16, "Q": 1, "C": 1, "R": 1, "S": 1]
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,p,k] += In[n,p,c] * F[n,c,k]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel
+    streaming:
+        In: true
+        F: false
+        Out: false
+    sharing:
+        block: true
+        PU: true
+        system: 0

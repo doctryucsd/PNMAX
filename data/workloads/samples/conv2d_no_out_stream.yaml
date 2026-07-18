@@ -1,0 +1,33 @@
+Name: conv2d_no_out_stream
+Problem:
+    N: 1
+    K: 512
+    P: 28
+    Q: 28
+    C: 256
+    R: 1
+    S: 1
+    Dilation: [1, 1]
+    Stride: [2, 2]
+Bound:
+    3: ["N": 1, "K": 4, "P": 1, "Q": 1, "C": 2, "R": 1, "S": 1]
+    2: ["N": 1, "K": 1, "P": 4, "Q": 2, "C": 1, "R": 1, "S": 1]
+    1: ["N": 1, "K": 32, "P": 7, "Q": 7, "C": 32, "R": 1, "S": 1]
+    0: ["N": 1, "K": 4, "P": 1, "Q": 2, "C": 4, "R": 1, "S": 1]
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,p,q,k] += In[n,p+r,q+s,c] * F[k,r,s,c]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel
+    streaming:
+        In: true
+        F: false
+        Out: false
+    sharing:
+        block: false
+        PU: false
+        system: 0
+    interleaving: false

@@ -1,0 +1,116 @@
+# Vendored from OptiPIM experimental/GPA sample_arch/hbm_pim.yaml @ c775742
+# ============================================================================
+#  Samsung “Aquabolt-XL” style HBM-PIM stack - revised to match ISCA’21 paper
+#     • 8 dies per stack
+#     • every die : 4 pseudo-channels  × 4 bank-groups × 4 banks  = 64 banks
+#     • 2 banks share one FP16 ALU  → 32 ALUs per die
+# ============================================================================
+tech: hbm_pim_tech_db.yaml            # technology numbers live here
+
+meta:
+  name: HBM_PIM_stack
+  clock: 1.2 GHz
+  dies : 8
+  comment: "HBM-PIM - 2-bank-per-ALU sharing (4 pCH × 4 BG × 4 banks)"
+
+# ----------------------------------------------------------------------------
+#  Macros – automatically generate all dies / pCHs / BGs / banks / ALUs
+# ----------------------------------------------------------------------------
+macros:
+  REPLICATE:
+
+    # ── Die cross-bar (one per die) ───────────────────────────────────────
+    die:
+      vars: 
+        d: 0:7
+      of:
+        type: xbar
+        class: hbm_die_xbar
+      hier_pattern: "tsv_bus/die{d}"
+
+    # ── Banks : 64 per die  (4 pCH × 4 BG × 4 banks) ──────────────────────
+    bank:
+      vars:
+        d: 0:7
+        p: 0:3
+        bg: 0:3
+        b: 0:3
+      id_pattern: "bank{d*64 + p*16 + bg*4 + b}"
+      of:
+        type: mem
+        class: hbm_bank
+      hier_pattern: "tsv_bus/die{d}/pch{p}/bg{bg}/bank{b}"
+
+    # ── ALUs : 32 per die  (two per BG) ───────────────────────────────────
+    alu:
+      vars:
+        d: 0:7
+        p: 0:3
+        bg: 0:3
+        u: 0:1
+      id_pattern: "alu{((d*4 + p)*4 + bg)*2 + u}"
+      of:
+        type: pu
+        class: hbm_alu
+      hier_pattern: "tsv_bus/die{d}/pch{p}/bg{bg}/alu{u}"
+
+# ----------------------------------------------------------------------------
+#  Explicit root node – TSV vertical bus shared by all dies
+# ----------------------------------------------------------------------------
+nodes:
+  tsv_bus:
+    type: bus
+    class: hbm_tsv_bus
+    hier_id: tsv_bus
+
+# ----------------------------------------------------------------------------
+#  Edges
+#     die        → TSV bus                         (cartesian)
+#     die        → its 64 local banks              (template)
+#     two banks  → their shared ALU (even / odd)   (template)
+# ----------------------------------------------------------------------------
+edges:
+
+  # die cross-bar ↔ TSV bus
+  - src: die*
+    dst: tsv_bus
+    link: die2tsv
+    mode: cartesian
+    attr: {direction: both}  # optional attributes
+
+  # die{d} ↔ its 64 banks
+  - src: die{d}
+    dst: bank{d*64 + p*16 + bg*4 + b}
+    link: die2bank
+    mode: template
+    range:
+      d: 0:7
+      p: 0:3
+      bg: 0:3
+      b: 0:3
+    attr: {direction: both}  # optional attributes
+
+  # banks (0,2) of a BG  → ALU u=0   — even first bank of each pair
+  - src: bank{d*64 + p*16 + bg*4 + u*2}
+    dst: alu{((d*4 + p)*4 + bg)*2 + u}
+    link: bank2alu
+    mode: template
+    range:
+      d: 0:7
+      p: 0:3
+      bg: 0:3
+      u: 0:1
+    attr: {direction: both}  # optional attributes
+
+  # banks (1,3) of a BG  → same ALU u   — odd mate of the pair
+  - src: bank{d*64 + p*16 + bg*4 + u*2 + 1}
+    dst: alu{((d*4 + p)*4 + bg)*2 + u}
+    link: bank2alu
+    mode: template
+    range:
+      d: 0:7
+      p: 0:3
+      bg: 0:3
+      u: 0:1
+    attr: {direction: both}  # optional attributes
+# ----------------------------------------------------------------------------

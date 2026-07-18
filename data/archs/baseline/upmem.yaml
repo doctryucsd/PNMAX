@@ -1,0 +1,219 @@
+# ============================================================================
+#  GPAM baseline architecture spec: UPMEM  (nominal baseline configuration)
+#
+#  Hand-authored companion of the calibrated flat runtime spec.  This
+#  topology + its tech-DB (upmem_tech_db.yaml) carry the hand-calibrated
+#  aggregate unit costs verbatim and lower (via `gpam-lower`) to
+#      data/archs/lowered/baseline/upmem.yaml
+#  byte-semantically; `gpam-lower --arch <this file> --check <that file>`
+#  verifies the equivalence.
+#
+#  Topology (flat hierarchy products verified against the lowered file):
+#      sys/channel{0..19}/rank{0..1}/chip{0..7}/{pu{0..7}, bank{0..15}}
+#      -> L5 channel x20, L4 rank x2, L3 chip x8, L2 pu x8   = 2560 DPUs
+#      -> 16 MRAM banks per chip, banks (2u, 2u+1) pairwise-load into DPU u
+#         => banks_per_pu 2, 5120 banks total
+#  The root segment `sys` names the root BUS node (not a level kind), so the
+#  lowered hierarchy starts at L5=channel, matching the flat file.  Node ids
+#  use the UPMEM names (dpu*/wram*); hierarchy segments spell the level-kind
+#  token `pu{u}` because lowering derives `hierarchy.L*.kind` from segment
+#  tokens (a `dpu{u}` spelling would also lower via the leaf node-kind
+#  fallback, but the kind token is used for uniformity).
+#
+#  Edge-direction convention: the vendored parser stores edges FORWARD-ONLY
+#  (`attr: {direction: both}` is a silent no-op), so the store/writeback path
+#  and the host upstream are authored as EXPLICIT reverse edges with their own
+#  link classes; one link class per ordered (src, dst) pair.
+#
+#  Cost-placement convention (same as hbm_pim - see that header for the full
+#  text): full load aggregate on MEM->BUF, store on BUF->MEM, WRAM<->DPU
+#  free; host aggregate on HOST<->root-bus (the only finite-bandwidth link);
+#  bank<->bank routed bank -> root bus -> bank with the full aggregate on the
+#  outbound hop, the free bank2bank_down return fan-out making every MEM/PU
+#  forward-reachable from the host.
+#
+#  Nominal-configuration reconciliation (each mismatch between the nominal
+#  baseline configuration and this calibrated model was tested empirically at the flat level by
+#  changing the single field and comparing analytical-model outputs):
+#    - PU count: the nominal configuration lists 128; modeled system = 2560 DPUs = 20 channels
+#      x 2 ranks x 8 chips x 8 DPUs.  128 = the PER-DIMM count (2 ranks x 8
+#      chips x 8 DPUs); the modeled 2560 is the UniNDP-validated 20-DIMM
+#      system.  Scope difference documented, calibrated topology kept.
+#    - Core frequency: the nominal configuration lists 400 MHz; calibrated DPU clock is 350 MHz.
+#      Empirically NO effect on any reported metric (26-workload matrix,
+#      plain+cache: zero diffs; specs.pu_frequency has no runtime consumer),
+#      but 350 MHz is kept: meta.clock denominates every calibrated cycle
+#      latency here, and the UniNDP validation converts simulator ticks at
+#      the hard-coded 350 MHz (src/pnmax/simulators/unindp/sim.py).
+#      The nominal 400 MHz matches the PPA template-generator clock
+#      (data/ppa/generate_arch_from_template.py), not the calibrated
+#      baseline.
+#    - Register file / PU: the nominal configuration lists 64 kB; calibrated cache_bytes is
+#      32KB (WRAM working partition).  Empirically: computed metric values
+#      identical everywhere tested (26-workload matrix plain+cache;
+#      100 searched FC mappings, 53 cache-enabled; 60 searched conv2d
+#      mappings) - only the breakdown's echoed capacity lines differ - BUT
+#      the field is structurally live (the cache simulator allocates from
+#      specs.cache_bytes, and the fig13/fig14 experiment pipelines
+#      force-enable the cache), so the calibrated 32 KiB behind the
+#      reference results is kept.
+#    - Row 1 kB, bank 32 MB, burst 4 (= 16 lanes x 16 bit / 64-bit column):
+#      consistent with the nominal configuration.
+#    - Bank-group size 4: upmem's flat hierarchy models no bg level; BG is
+#      folded into the per-chip bank count.
+# ============================================================================
+
+tech: upmem_tech_db.yaml              # calibrated aggregate costs live there
+
+meta:
+  name: upmem                         # lowers to flat `name`
+  # DPU clock; all cycle-denominated tech-DB latencies are PU cycles.
+  # Provenance: lowered/baseline/upmem.yaml specs.pu_frequency 350Mhz
+  # (nominal 400 MHz - kept calibrated, see header).
+  clock: 350 MHz
+  # Provenance: lowered/baseline/upmem.yaml total_area_mm2 36.9754
+  # (metadata only, not consumed by the runtime; FORMAT.md).
+  total_area_mm2: 36.9754
+
+# ----------------------------------------------------------------------------
+#  Replicated nodes: 20 channels x 2 ranks x 8 chips
+#                    x {16 MRAM banks, 8 DPUs, 8 WRAMs}
+#  Chip linear index K = (c*2 + r)*8 + k   (0..319)
+# ----------------------------------------------------------------------------
+macros:
+  REPLICATE:
+
+    # MRAM banks: 16 per chip (2 per DPU), 5120 total
+    bank:
+      vars:
+        c: 0:19
+        r: 0:1
+        k: 0:7
+        b: 0:15
+      id_pattern: "bank{((c*2 + r)*8 + k)*16 + b}"
+      of:
+        type: mem
+        class: upmem_mram_bank
+      hier_pattern: "sys/channel{c}/rank{r}/chip{k}/bank{b}"
+
+    # DPUs: 8 per chip, 2560 total
+    dpu:
+      vars:
+        c: 0:19
+        r: 0:1
+        k: 0:7
+        u: 0:7
+      id_pattern: "dpu{((c*2 + r)*8 + k)*8 + u}"
+      of:
+        type: pu
+        class: upmem_dpu
+      hier_pattern: "sys/channel{c}/rank{r}/chip{k}/pu{u}"
+
+    # Per-DPU WRAM (BUF): child of its DPU, NOT a hierarchy level
+    wram:
+      vars:
+        c: 0:19
+        r: 0:1
+        k: 0:7
+        u: 0:7
+      id_pattern: "wram{((c*2 + r)*8 + k)*8 + u}"
+      of:
+        type: buffer
+        class: upmem_wram
+      hier_pattern: "sys/channel{c}/rank{r}/chip{k}/pu{u}/wram"
+
+# ----------------------------------------------------------------------------
+#  Explicit nodes: root bus + host
+# ----------------------------------------------------------------------------
+nodes:
+  # Device-side root; its hier segment (`sys`) is NOT a level kind, so it
+  # adds no hierarchy level (flat upmem tops out at L5 channel).
+  sys:
+    type: bus
+    hier_id: sys
+  # HOST: single node with its own root hier_id (NOT a prefix of device paths).
+  host:
+    type: host
+    hier_id: host
+
+# ----------------------------------------------------------------------------
+#  Edges (all costs come from the link classes in the tech-DB)
+# ----------------------------------------------------------------------------
+edges:
+
+  # -- load path: banks (2u, 2u+1) -> WRAM of DPU u  [full aggregate hop]
+  - src: bank{((c*2 + r)*8 + k)*16 + 2*u}
+    dst: wram{((c*2 + r)*8 + k)*8 + u}
+    link: bank2wram_load
+    mode: template
+    range:
+      c: 0:19
+      r: 0:1
+      k: 0:7
+      u: 0:7
+  - src: bank{((c*2 + r)*8 + k)*16 + 2*u + 1}
+    dst: wram{((c*2 + r)*8 + k)*8 + u}
+    link: bank2wram_load
+    mode: template
+    range:
+      c: 0:19
+      r: 0:1
+      k: 0:7
+      u: 0:7
+
+  # -- store path: EXPLICIT reverse edges (forward-only parser)  [aggregate]
+  - src: wram{((c*2 + r)*8 + k)*8 + u}
+    dst: bank{((c*2 + r)*8 + k)*16 + 2*u}
+    link: wram2bank_store
+    mode: template
+    range:
+      c: 0:19
+      r: 0:1
+      k: 0:7
+      u: 0:7
+  - src: wram{((c*2 + r)*8 + k)*8 + u}
+    dst: bank{((c*2 + r)*8 + k)*16 + 2*u + 1}
+    link: wram2bank_store
+    mode: template
+    range:
+      c: 0:19
+      r: 0:1
+      k: 0:7
+      u: 0:7
+
+  # -- WRAM <-> DPU: free hops (aggregates sit on the MEM<->BUF hop)
+  - src: wram{i}
+    dst: dpu{i}
+    link: wram2dpu
+    mode: template
+    range:
+      i: 0:2559
+  - src: dpu{i}
+    dst: wram{i}
+    link: dpu2wram
+    mode: template
+    range:
+      i: 0:2559
+
+  # -- host link: downstream + EXPLICIT upstream (only finite-bw link class;
+  #    the host node carries no other outgoing edge)
+  - src: host
+    dst: sys
+    link: host_link
+    mode: cartesian
+  - src: sys
+    dst: host
+    link: host_link_up
+    mode: cartesian
+
+  # -- host/bus-mediated bank<->bank sharing (flat bank_to_bank_transfer):
+  #    bank -> root bus carries the full aggregate; the free bus -> bank
+  #    return hop doubles as the host-reachability fan-out
+  - src: bank*
+    dst: sys
+    link: bank2bank
+    mode: cartesian
+  - src: sys
+    dst: bank*
+    link: bank2bank_down
+    mode: cartesian

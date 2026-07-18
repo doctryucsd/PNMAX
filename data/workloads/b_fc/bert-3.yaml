@@ -1,0 +1,30 @@
+Name: bmm_bert_3
+Problem:
+    N: 1
+    K: 768
+    P: 128
+    Q: 1
+    C: 768
+    R: 1
+    S: 1
+Bound:
+    3: ["N": 1, "K": 1, "P": 4, "Q": 1, "C": 4, "R": 1, "S": 1]
+    2: ["N": 1, "K": 2, "P": 4, "Q": 1, "C": 1, "R": 1, "S": 1]
+    1: ["N": 1, "K": 24, "P": 8, "Q": 1, "C": 192, "R": 1, "S": 1]
+    0: ["N": 1, "K": 16, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,p,k] += In[n,p,c] * F[n,c,k]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel
+    streaming:
+        In: true
+        F: false
+        Out: true
+    sharing:
+        block: false
+        PU: false
+        system: 0

@@ -1,0 +1,293 @@
+{
+  "generated_at": "2026-06-12T11:03:59.602449+00:00",
+  "layers": [
+    {
+      "c": 2560,
+      "k": 2560,
+      "layer_index": 0,
+      "n": 1,
+      "op_type": "FC",
+      "p": 2048,
+      "raw_row": [
+        "0",
+        "FC",
+        "0",
+        "1",
+        "1",
+        "2048",
+        "2560",
+        "-1",
+        "2560",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1"
+      ],
+      "type_layer_index": 0,
+      "workload_token": "fc_n1_c2560_k2560"
+    },
+    {
+      "c": 2560,
+      "k": 2560,
+      "layer_index": 1,
+      "n": 1,
+      "op_type": "FC",
+      "p": 2048,
+      "raw_row": [
+        "1",
+        "FC",
+        "1",
+        "1",
+        "1",
+        "2048",
+        "2560",
+        "-1",
+        "2560",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1"
+      ],
+      "type_layer_index": 1,
+      "workload_token": "fc_n1_c2560_k2560"
+    },
+    {
+      "c": 2560,
+      "k": 2560,
+      "layer_index": 2,
+      "n": 1,
+      "op_type": "FC",
+      "p": 2048,
+      "raw_row": [
+        "2",
+        "FC",
+        "2",
+        "1",
+        "1",
+        "2048",
+        "2560",
+        "-1",
+        "2560",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1"
+      ],
+      "type_layer_index": 2,
+      "workload_token": "fc_n1_c2560_k2560"
+    },
+    {
+      "c": 80,
+      "k": 2048,
+      "layer_index": 3,
+      "n": 32,
+      "op_type": "BATCH_MATMUL",
+      "p": 2048,
+      "raw_row": [
+        "3",
+        "batch_matmul",
+        "3",
+        "32",
+        "-1",
+        "2048",
+        "80",
+        "-1",
+        "2048",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1"
+      ],
+      "type_layer_index": 3,
+      "workload_token": "bmm_n32_c80_k2048"
+    },
+    {
+      "c": 2048,
+      "k": 80,
+      "layer_index": 4,
+      "n": 32,
+      "op_type": "BATCH_MATMUL",
+      "p": 2048,
+      "raw_row": [
+        "4",
+        "batch_matmul",
+        "4",
+        "32",
+        "-1",
+        "2048",
+        "2048",
+        "-1",
+        "80",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1"
+      ],
+      "type_layer_index": 4,
+      "workload_token": "bmm_n32_c2048_k80"
+    },
+    {
+      "c": 2560,
+      "k": 2560,
+      "layer_index": 5,
+      "n": 1,
+      "op_type": "FC",
+      "p": 2048,
+      "raw_row": [
+        "5",
+        "FC",
+        "5",
+        "1",
+        "1",
+        "2048",
+        "2560",
+        "-1",
+        "2560",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1"
+      ],
+      "type_layer_index": 5,
+      "workload_token": "fc_n1_c2560_k2560"
+    },
+    {
+      "c": 2560,
+      "k": 10240,
+      "layer_index": 6,
+      "n": 1,
+      "op_type": "FC",
+      "p": 2048,
+      "raw_row": [
+        "6",
+        "FC",
+        "6",
+        "1",
+        "1",
+        "2048",
+        "2560",
+        "-1",
+        "10240",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1"
+      ],
+      "type_layer_index": 6,
+      "workload_token": "fc_n1_c2560_k10240"
+    },
+    {
+      "c": 10240,
+      "k": 2560,
+      "layer_index": 7,
+      "n": 1,
+      "op_type": "FC",
+      "p": 2048,
+      "raw_row": [
+        "7",
+        "FC",
+        "7",
+        "1",
+        "1",
+        "2048",
+        "10240",
+        "-1",
+        "2560",
+        "-1",
+        "-1",
+        "-1",
+        "-1",
+        "-1"
+      ],
+      "type_layer_index": 7,
+      "workload_token": "fc_n1_c10240_k2560"
+    }
+  ],
+  "model_dir": "data/nn_models/opt-2.7B-2048",
+  "multiplicities": {
+    "bmm_n32_c2048_k80": 1,
+    "bmm_n32_c80_k2048": 1,
+    "fc_n1_c10240_k2560": 1,
+    "fc_n1_c2560_k10240": 1,
+    "fc_n1_c2560_k2560": 4
+  },
+  "num_layers": 8,
+  "source_csv": "data/nn_models/opt-2.7B-2048/layer_params.csv",
+  "unique_workloads": [
+    {
+      "c": 2560,
+      "k": 2560,
+      "layer_indices": [
+        0,
+        1,
+        2,
+        5
+      ],
+      "multiplicity": 4,
+      "n": 1,
+      "op_type": "FC",
+      "p": 1,
+      "token": "fc_n1_c2560_k2560",
+      "yaml_path": "data/workloads/end_to_end/opt-2.7B-2048/fc_n1_c2560_k2560.yaml"
+    },
+    {
+      "c": 80,
+      "k": 2048,
+      "layer_indices": [
+        3
+      ],
+      "multiplicity": 1,
+      "n": 32,
+      "op_type": "BATCH_MATMUL",
+      "p": 1,
+      "token": "bmm_n32_c80_k2048",
+      "yaml_path": "data/workloads/end_to_end/opt-2.7B-2048/bmm_n32_c80_k2048.yaml"
+    },
+    {
+      "c": 2048,
+      "k": 80,
+      "layer_indices": [
+        4
+      ],
+      "multiplicity": 1,
+      "n": 32,
+      "op_type": "BATCH_MATMUL",
+      "p": 1,
+      "token": "bmm_n32_c2048_k80",
+      "yaml_path": "data/workloads/end_to_end/opt-2.7B-2048/bmm_n32_c2048_k80.yaml"
+    },
+    {
+      "c": 2560,
+      "k": 10240,
+      "layer_indices": [
+        6
+      ],
+      "multiplicity": 1,
+      "n": 1,
+      "op_type": "FC",
+      "p": 1,
+      "token": "fc_n1_c2560_k10240",
+      "yaml_path": "data/workloads/end_to_end/opt-2.7B-2048/fc_n1_c2560_k10240.yaml"
+    },
+    {
+      "c": 10240,
+      "k": 2560,
+      "layer_indices": [
+        7
+      ],
+      "multiplicity": 1,
+      "n": 1,
+      "op_type": "FC",
+      "p": 1,
+      "token": "fc_n1_c10240_k2560",
+      "yaml_path": "data/workloads/end_to_end/opt-2.7B-2048/fc_n1_c10240_k2560.yaml"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+# ============================================================================
+#  GPAM tech-DB: UPMEM baseline (companion of baseline/upmem.yaml)
+#
+#  Every number below is the hand-calibrated aggregate from the flat runtime
+#  spec  data/archs/lowered/baseline/upmem.yaml  ("flat" in the comments),
+#  the reference calibrated spec (validated against UniNDP by
+#  experiments/fig08_tab4_validation).  Values are deliberately HARD-CODED: they are
+#  hand-calibrated at a 350 MHz DPU clock with non-integer cycle latencies
+#  (2.375, 4.75) and are not derivable from the PPA CSVs (both shipped
+#  generators under data/ppa/ emit integer-rounded latencies at other
+#  clocks).  DDR4-vs-HBM class naming is cosmetic for baselines.
+#
+#  Unit conventions: latencies are PU cycles at meta.clock = 350 MHz; the
+#  modeled transaction is one SIMD vector load of 32 B, so cost-link
+#  energies are e_B = flat_energy / 32 (host link: / 8, per 64-bit column);
+#  capacities/bandwidths use pint BINARY units (KiB/MiB/GiB, 1024-based flat
+#  parser); numeric strings start with a digit and avoid "**"; the ONLY
+#  finite bandwidth is the host link.  No PVT corners are defined (if ever
+#  added, use an explicit `scale:` block - the shorthand does not cover
+#  compute_energy/row_change_energy or bandwidth).
+#
+#  b2b NOTE: bank_to_bank_transfer latency 92 is the BASE value.  x16
+#  degraded-host experiment variants (energy unchanged) are DERIVED
+#  downstream from lowered files and are intentionally NOT encoded here.
+# ============================================================================
+
+defaults:
+
+  # ────────────────────────── node classes ────────────────────────────────
+  node_class:
+
+    # MRAM bank (16 per chip; 2 banks feed one DPU - see topology).
+    upmem_mram_bank:
+      row_bytes: 1 KiB                    # flat specs.row_bytes 1KB (nominal row size 1kB - MATCH)
+      capacity: 32 MiB                    # flat specs.bank_bytes 32MB (nominal bank capacity 32MB - MATCH)
+      row_change_latency: 25 cycle        # flat unit_costs.row_change.latency 25
+      row_change_energy: 545.171 pJ       # flat unit_costs.row_change.energy 545.171
+      host_row_conflict_latency: 25 cycle # flat unit_costs.host_bank_row_conflict.latency 25
+      host_row_conflict_energy: 545.171 pJ # flat unit_costs.host_bank_row_conflict.energy 545.171
+
+    # DPU (8 per chip, 2560 total).
+    upmem_dpu:
+      simd_lanes: 16                      # flat specs.simd_lanes 16 (nominal burst 4 x 64-bit col / 16-bit = 16 lanes)
+      compute_latency: 4.75 cycle         # flat unit_costs.pu_compute.latency 4.75 (hand-calibrated, non-integer)
+      compute_energy: 65.569 pJ           # flat unit_costs.pu_compute.energy 65.569
+
+    # Per-DPU WRAM (BUF): wram mode, no vector_width_bits (not a regfile).
+    upmem_wram:
+      capacity: 32 KiB                    # flat specs.cache_bytes 32KB (nominal RF 64kB - calibrated 32 KiB kept; see topology header)
+      mode: wram                          # flat cache.mode wram
+      area_mm2: 0.0                       # WRAM area folded into meta.total_area_mm2
+
+  # ────────────────────────── link classes ────────────────────────────────
+  link:
+
+    # load: bank -> its DPU's WRAM [carries the FULL load aggregate]
+    bank2wram_load:
+      bandwidth: INF                      # cost link: latency = startup only
+      startup_latency: 2.375 cycle        # flat unit_costs.bank_to_pu_load.latency 2.375 (hand-calibrated, non-integer)
+      energy_per_byte: 4.56478125 pJ      # flat bank_to_pu_load.energy 146.073 / 32 B
+
+    # store: WRAM -> bank [EXPLICIT reverse path, FULL aggregate]
+    # NOTE store energy differs from load (146.092 vs 146.073) - the two
+    # directions are distinct calibrated aggregates, hence distinct classes.
+    wram2bank_store:
+      bandwidth: INF
+      startup_latency: 2.375 cycle        # flat unit_costs.pu_to_bank_store.latency 2.375
+      energy_per_byte: 4.565375 pJ        # flat pu_to_bank_store.energy 146.092 / 32 B
+
+    # WRAM <-> DPU: free hops (aggregates sit on the MEM<->BUF hop)
+    wram2dpu:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ
+    dpu2wram:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ
+
+    # host <-> device root bus (the ONLY finite-bandwidth link classes)
+    host_link:
+      bandwidth: 1.4 GiB/s                # flat bandwidth.host_device 1.4GB/s (1024-based => binary GiB)
+      startup_latency: 4 cycle            # flat unit_costs.host_pu_transfer.latency 4 (per 64-bit column)
+      energy_per_byte: 18.260375 pJ       # flat host_pu_transfer.energy 146.083 / 8 B (per-column charge)
+    host_link_up:
+      bandwidth: 1.4 GiB/s                # explicit upstream twin of host_link (forward-only parser)
+      startup_latency: 4 cycle
+      energy_per_byte: 18.260375 pJ
+
+    # bank -> root bus: host/bus-mediated bank<->bank sharing [FULL aggregate]
+    bank2bank:
+      bandwidth: INF
+      startup_latency: 92 cycle           # flat unit_costs.bank_to_bank_transfer.latency 92 (BASE value)
+      energy_per_byte: 47.76815625 pJ     # flat bank_to_bank_transfer.energy 1528.581 / 32 B
+
+    # root bus -> bank: free return hop + host-reachability fan-out
+    bank2bank_down:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ

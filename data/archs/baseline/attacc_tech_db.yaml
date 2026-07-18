@@ -1,0 +1,101 @@
+# ============================================================================
+#  GPAM tech-DB: AttAcc baseline (companion of baseline/attacc.yaml)
+#
+#  Every number below is the hand-calibrated aggregate from the flat runtime
+#  spec  data/archs/lowered/baseline/attacc.yaml  ("flat" in the comments),
+#  the reference calibrated spec (validated against the AttAcc
+#  simulator by experiments/fig08_tab4_validation; loaded by run-attacc-analytical).
+#  Values are deliberately HARD-CODED: they are hand-calibrated at a
+#  666 MHz PU clock and are not derivable from the PPA CSVs (both shipped
+#  generators under data/ppa/ emit integer-rounded latencies at other
+#  clocks).  The round-looking values (1, 4, 100, 66 pJ) are LIVE
+#  calibrated inputs, not placeholders.
+#
+#  Unit conventions: latencies are PU cycles at meta.clock = 666 MHz; the
+#  modeled transaction is one SIMD vector load of 32 B, so cost-link
+#  energies are e_B = flat_energy / 32 (host link: / 8, per 64-bit column);
+#  capacities/bandwidths use pint BINARY units (KiB/MiB/GiB, 1024-based flat
+#  parser); numeric strings start with a digit and avoid "**"; the ONLY
+#  finite bandwidth is the host link.  No PVT corners are defined (if ever
+#  added, use an explicit `scale:` block - the shorthand does not cover
+#  compute_energy/row_change_energy or bandwidth).
+#
+#  b2b NOTE: bank_to_bank_transfer latency 100 is the BASE value; no x16
+#  degraded-host variant exists for attacc (that derivation applies to
+#  hbm_pim/upmem sweep archs only).
+# ============================================================================
+
+defaults:
+
+  # ────────────────────────── node classes ────────────────────────────────
+  node_class:
+
+    # DRAM bank (4 per bank group, 256 total; 1 bank per PU).
+    attacc_bank:
+      row_bytes: 1 KiB                    # flat specs.row_bytes 1KB (nominal row size 1kB - MATCH)
+      capacity: 16 MiB                    # flat specs.bank_bytes 16MB (nominal bank capacity 16MB - MATCH)
+      row_change_latency: 25 cycle        # flat unit_costs.row_change.latency 25
+      row_change_energy: 25 pJ            # flat unit_costs.row_change.energy 25
+      host_row_conflict_latency: 31 cycle # flat unit_costs.host_bank_row_conflict.latency 31 (differs from row_change - keep separate)
+      host_row_conflict_energy: 31 pJ     # flat unit_costs.host_bank_row_conflict.energy 31
+
+    # Buffer-die MAC PU (one per bank, 256 total).
+    attacc_pu:
+      simd_lanes: 16                      # flat specs.simd_lanes 16 (nominal burst 4 x 64-bit col / 16-bit = 16 lanes)
+      compute_latency: 4.0 cycle          # flat unit_costs.pu_compute.latency 4.0
+      compute_energy: 66 pJ               # flat unit_costs.pu_compute.energy 66
+
+    # Per-PU register file (BUF).
+    attacc_regfile:
+      capacity: 512 B                     # flat specs.cache_bytes 512B (nominal RF 8KB - calibrated 512 B kept: 8KB measurably changes mapped results, 33/100 searched mappings; see topology header)
+      mode: regfile                       # flat cache.mode regfile
+      vector_width_bits: 256              # flat cache.vector_width_bits 256 (= simd_lanes x 16)
+      area_mm2: 0.0                       # no area accounting for attacc (flat reference has no total_area_mm2)
+
+  # ────────────────────────── link classes ────────────────────────────────
+  link:
+
+    # load: bank -> its PU's register file [carries the FULL load aggregate]
+    bank2rf_load:
+      bandwidth: INF                      # cost link: latency = startup only
+      startup_latency: 2.0 cycle          # flat unit_costs.bank_to_pu_load.latency 2.0
+      energy_per_byte: 0.03125 pJ         # flat bank_to_pu_load.energy 1 / 32 B
+
+    # store: register file -> bank [EXPLICIT reverse path, FULL aggregate]
+    # NOTE store != load for AttAcc (energy 0 vs 1/32) - distinct classes.
+    rf2bank_store:
+      bandwidth: INF
+      startup_latency: 2.0 cycle          # flat unit_costs.pu_to_bank_store.latency 2.0
+      energy_per_byte: 0 pJ               # flat pu_to_bank_store.energy 0
+
+    # register file <-> PU: free hops (aggregates sit on the MEM<->BUF hop)
+    rf2pu:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ
+    pu2rf:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ
+
+    # host <-> stack I/O hub (the ONLY finite-bandwidth link classes)
+    host_link:
+      bandwidth: 512 GiB/s                # flat bandwidth.host_device 512GB/s (1024-based => binary GiB)
+      startup_latency: 4 cycle            # flat unit_costs.host_pu_transfer.latency 4 (per 64-bit column)
+      energy_per_byte: 0.5 pJ             # flat host_pu_transfer.energy 4 / 8 B (per-column charge)
+    host_link_up:
+      bandwidth: 512 GiB/s                # explicit upstream twin of host_link (forward-only parser)
+      startup_latency: 4 cycle
+      energy_per_byte: 0.5 pJ
+
+    # bank -> iobus: host/bus-mediated bank<->bank sharing [FULL aggregate]
+    bank2bank:
+      bandwidth: INF
+      startup_latency: 100 cycle          # flat unit_costs.bank_to_bank_transfer.latency 100 (BASE)
+      energy_per_byte: 3.125 pJ           # flat bank_to_bank_transfer.energy 100 / 32 B
+
+    # iobus -> bank: free return hop + host-reachability fan-out
+    bank2bank_down:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ

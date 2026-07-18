@@ -1,0 +1,43 @@
+[project]
+name = "pnmax"
+version = "0.1.0"
+description = "PNMAX: Mapping-Architecture Co-Exploration Framework for Processing Near Memory (MICRO 2026) — artifact"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib>=3.10.8",
+    "networkx>=3.4.2",
+    "numpy>=2.2.6",
+    "pint>=0.24.4",
+    "pyyaml>=6.0.3",
+    "ruamel-yaml>=0.18.6",
+    "tqdm>=4.67.1",
+]
+
+[project.scripts]
+gpam-info = "pnmax.gpam.cli:main"
+gpam-lower = "pnmax.gpam.lower:main"
+run-random-search = "pnmax.cli.run_random_search:main"
+run-workload-space-random-search = "pnmax.cli.run_workload_space_random_search:main"
+run-workload-space-pareto-eval = "pnmax.cli.run_workload_space_pareto_eval:main"
+run-end-to-end-workload-space = "pnmax.cli.run_end_to_end_workload_space:main"
+run-geometry-sweep-end-to-end-workload-space = "pnmax.cli.run_geometry_sweep_end_to_end_workload_space:main"
+run-geometry-sweep-workload-space-pareto-eval = "pnmax.cli.run_geometry_sweep_workload_space_pareto_eval:main"
+run-buffer-sweep-workload-space-latency-eval = "pnmax.cli.run_buffer_sweep_workload_space_latency_eval:main"
+run-buffer-sweep-workload-space-random-set-latency-eval = "pnmax.cli.run_buffer_sweep_workload_space_random_set_latency_eval:main"
+run-activation-workload-space-latency-eval = "pnmax.cli.run_activation_workload_space_latency_eval:main"
+run-random-search-attacc = "pnmax.cli.run_random_search_attacc:main"
+run-unindp-validation = "pnmax.cli.unindp_validation:main"
+run-attacc-validation = "pnmax.cli.attacc_validation:main"
+# Dropped relative to the upstream development repo (dead/superseded CLIs):
+# run-refresh-baseline-results, run-row-changes, run-row-changes-batch,
+# run-row-changes-clamp-exp, run-unindp, run-unindp-analytical,
+# run-analytical, run-attacc-analytical, run-verify-constraints,
+# run-validation-workload-scatter, the SA stack (run-sa-workload-exp,
+# run-sa-workload-pipeline, run-workload-space-sa-augment) and the
+# end-to-end/reference sweep-eval variants no experiment button uses.
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"

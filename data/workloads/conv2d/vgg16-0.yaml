@@ -1,0 +1,32 @@
+Name: conv2d_vgg16_0
+Problem:
+    N: 1
+    K: 64
+    P: 224
+    Q: 224
+    C: 3
+    R: 3
+    S: 3
+    Dilation: [1, 1]
+    Stride: [1, 1]
+Bound:
+    3: ["N": 1, "K": 2, "P": 7, "Q": 1, "C": 1, "R": 1, "S": 1]
+    2: ["N": 1, "K": 8, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]
+    1: ["N": 1, "K": 1, "P": 32, "Q": 224, "C": 3, "R": 3, "S": 1]
+    0: ["N": 1, "K": 4, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 3]
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,p,q,k] += In[n,p+r,q+s,c] * F[k,r,s,c]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel
+    streaming:
+        In: true
+        F: false
+        Out: true
+    sharing:
+        block: false
+        PU: false
+        system: 0

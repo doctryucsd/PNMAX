@@ -1,0 +1,33 @@
+Name: gemv_attacc
+Problem:
+    N: 1
+    K: 2048
+    P: 1
+    Q: 1
+    C: 128
+    R: 1
+    S: 1
+Bound:
+    5: ["N": 1, "K": 2, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]     # Split across 2 pCHs [Fixed]
+    4: ["N": 1, "K": 2, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]     # Split across 2 ranks [Fixed]
+    3: ["N": 1, "K": 4, "P": 1, "Q": 1, "C": 1, "R": 1, "S": 1]     # Split across 4 bank groups [Fixed]
+    2: ["N": 1, "K": 1, "P": 1, "Q": 1, "C": 4, "R": 1, "S": 1]     # C across 4 banks [Fixed]
+    1: ["N": 1, "K": 128, "P": 1, "Q": 1, "C": 2, "R": 1, "S": 1]   #! Sequential level, We can only change this level, K * C < 524288, if you change K to be larger than 4096, you also need to pass the K as --maxlen to attacc_simulation 
+    0: ["N": 1, "K": 1, "P": 1, "Q": 1, "C": 16, "R": 1, "S": 1]    # Concurrency level
+TensorAttr:
+    In: 16b
+    F: 16b
+    Out: 16b
+Compute: Out[n,k] += In[n,c] * F[k,c]
+Layout-Pragma:
+    cache: false
+    bit: bit-parallel
+    streaming:
+        In: true    # input vector broadcast into GEMV buffers
+        F: false    # weight matrix stored in DRAM
+        Out: true   # output vector kept local until MVSB
+    sharing:
+        block: false
+        PU: false
+        system: false
+    interleaving: false

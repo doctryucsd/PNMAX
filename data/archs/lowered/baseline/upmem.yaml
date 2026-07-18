@@ -1,0 +1,32 @@
+name: upmem
+
+cache:
+  mode: wram
+
+specs:
+  row_bytes: 1KB
+  bank_bytes: 32MB
+  cache_bytes: 32KB
+  banks_per_pu: 2
+  pu_frequency: 350Mhz
+  simd_lanes: 16
+
+hierarchy:
+  L2: { kind: pu, count: 8 }
+  L3: { kind: chip, count: 8 }
+  L4: { kind: rank, count: 2 }
+  L5: { kind: channel, count: 20 }
+
+bandwidth:
+  host_device: 1.4GB/s
+
+unit_costs:
+  bank_to_pu_load: { latency: 2.375, energy: 146.073 }
+  pu_to_bank_store: { latency: 2.375, energy: 146.092 }
+  host_pu_transfer: { latency: 4, energy: 146.083 }
+  bank_to_bank_transfer: { latency: 92, energy: 1528.581 }
+  host_bank_row_conflict: { latency: 25, energy: 545.171 }
+  pu_compute: { latency: 4.75, energy: 65.569 }
+  row_change: { latency: 25, energy: 545.171 }
+
+total_area_mm2: 36.9754

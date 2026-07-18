@@ -1,0 +1,106 @@
+# ============================================================================
+#  GPAM tech-DB: HBM-PIM baseline (companion of baseline/hbm_pim.yaml)
+#
+#  Every number below is the hand-calibrated aggregate from the flat runtime
+#  spec  data/archs/lowered/baseline/hbm_pim.yaml  ("flat" in the comments),
+#  the reference calibrated spec (validated against UniNDP by
+#  experiments/fig08_tab4_validation).  These values are deliberately HARD-CODED: they are
+#  hand-calibrated at a 300 MHz PU clock with non-integer cycle latencies
+#  and are not derivable from the PPA CSVs (both shipped generators under
+#  data/ppa/ emit integer-rounded latencies at a fixed 400 MHz clock).
+#
+#  Unit conventions:
+#    - latencies are PU cycles ("N cycle") at meta.clock = 300 MHz;
+#    - the modeled transaction is one SIMD vector load of
+#      simd_lanes*16 bit = 32 B, so per-byte link energies are
+#      e_B = flat_energy / 32  (exact decimals; /32 is float64-exact);
+#      the host link is charged per 64-bit column: e_B = flat_energy / 8;
+#    - capacities/bandwidths use pint BINARY units (KiB/MiB/GiB) because the
+#      flat parser is 1024-based (silent 2.4-7.4% shifts with kB/GB);
+#    - numeric strings start with a digit and avoid "**" (parser rule);
+#    - transfer costs on cost-bearing links: bandwidth INF + startup_latency
+#      + energy_per_byte; the ONLY finite bandwidth is the host link
+#      (-> bandwidth.host_device, a pass-through value not used in hop math).
+#
+#  No PVT corners are defined.  If corners are ever added: the shorthand
+#  scale_latency/scale_energy does NOT cover compute_energy/row_change_energy
+#  (regex ^energy) or bandwidth - use an explicit `scale:` block.
+#
+#  b2b NOTE: bank_to_bank_transfer latency 630 is the BASE value.  x16
+#  degraded-host experiment variants (energy unchanged) are DERIVED
+#  downstream from lowered files and are intentionally NOT encoded here.
+# ============================================================================
+
+defaults:
+
+  # ────────────────────────── node classes ────────────────────────────────
+  node_class:
+
+    # DRAM bank (16 per channel; 2 banks feed one PU - see topology).
+    hbm_pim_bank:
+      row_bytes: 1 KiB                    # flat specs.row_bytes 1KB (nominal row size 1kB; physical per-bank row - the doubled-row convention is structural, see topology header)
+      capacity: 16 MiB                    # flat specs.bank_bytes 16MB (nominal bank capacity 16MB)
+      row_change_latency: 25 cycle        # flat unit_costs.row_change.latency 25
+      row_change_energy: 336.911 pJ       # flat unit_costs.row_change.energy 336.911
+      host_row_conflict_latency: 25 cycle # flat unit_costs.host_bank_row_conflict.latency 25
+      host_row_conflict_energy: 336.911 pJ # flat unit_costs.host_bank_row_conflict.energy 336.911
+
+    # FP16 SIMD PU (8 per channel, 512 total).
+    hbm_pim_pu:
+      simd_lanes: 16                      # flat specs.simd_lanes 16 (nominal burst 4 x 64-bit col / 16-bit = 16 lanes)
+      compute_latency: 20.0 cycle         # flat unit_costs.pu_compute.latency 20.0 (per SIMD-vector step incl. 2x RF access)
+      compute_energy: 58.624 pJ           # flat unit_costs.pu_compute.energy 58.624
+
+    # Per-PU register file (BUF; first BUF-kind node in the repo).
+    hbm_pim_regfile:
+      capacity: 512 B                     # flat specs.cache_bytes 512B (nominal register file / PU 512B - MATCH)
+      mode: regfile                       # flat cache.mode regfile
+      vector_width_bits: 256              # flat cache.vector_width_bits 256 (= simd_lanes x 16)
+      area_mm2: 0.0                       # RF area folded into meta.total_area_mm2 (flat total_area_mm2 is the authored total)
+
+  # ────────────────────────── link classes ────────────────────────────────
+  link:
+
+    # load: bank -> its PU's register file [carries the FULL load aggregate]
+    bank2rf_load:
+      bandwidth: INF                      # cost link: latency = startup only
+      startup_latency: 10.0 cycle         # flat unit_costs.bank_to_pu_load.latency 10.0
+      energy_per_byte: 2.529375 pJ        # flat bank_to_pu_load.energy 80.94 / 32 B
+
+    # store: register file -> bank [EXPLICIT reverse path, FULL aggregate]
+    rf2bank_store:
+      bandwidth: INF
+      startup_latency: 10.0 cycle         # flat unit_costs.pu_to_bank_store.latency 10.0
+      energy_per_byte: 2.529375 pJ        # flat pu_to_bank_store.energy 80.94 / 32 B
+
+    # register file <-> PU: free hops (aggregates sit on the MEM<->BUF hop)
+    rf2pu:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ
+    pu2rf:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ
+
+    # host <-> device root bus (the ONLY finite-bandwidth link classes)
+    host_link:
+      bandwidth: 670 MiB/s                # flat bandwidth.host_device 670MB/s (1024-based => binary MiB)
+      startup_latency: 2 cycle            # flat unit_costs.host_pu_transfer.latency 2 (per 64-bit column)
+      energy_per_byte: 10.1175 pJ         # flat host_pu_transfer.energy 80.94 / 8 B (per-column charge)
+    host_link_up:
+      bandwidth: 670 MiB/s                # explicit upstream twin of host_link (forward-only parser)
+      startup_latency: 2 cycle
+      energy_per_byte: 10.1175 pJ
+
+    # bank -> root bus: host/bus-mediated bank<->bank sharing [FULL aggregate]
+    bank2bank:
+      bandwidth: INF
+      startup_latency: 630 cycle          # flat unit_costs.bank_to_bank_transfer.latency 630 (BASE value)
+      energy_per_byte: 28.6450625 pJ      # flat bank_to_bank_transfer.energy 916.642 / 32 B
+
+    # root bus -> bank: free return hop + host-reachability fan-out
+    bank2bank_down:
+      bandwidth: INF
+      startup_latency: 0 cycle
+      energy_per_byte: 0 pJ

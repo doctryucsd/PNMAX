@@ -1,0 +1,75 @@
+Name: bmm_n16_c64_k1024
+Problem:
+  N: 16
+  K: 1024
+  P: 1
+  Q: 1
+  C: 64
+  R: 1
+  S: 1
+Bound:
+  5:
+  - N: 1
+  - K: 1
+  - P: 1
+  - Q: 1
+  - C: 1
+  - R: 1
+  - S: 1
+  4:
+  - N: 1
+  - K: 1
+  - P: 1
+  - Q: 1
+  - C: 1
+  - R: 1
+  - S: 1
+  3:
+  - N: 1
+  - K: 1
+  - P: 1
+  - Q: 1
+  - C: 1
+  - R: 1
+  - S: 1
+  2:
+  - N: 1
+  - K: 1
+  - P: 1
+  - Q: 1
+  - C: 1
+  - R: 1
+  - S: 1
+  1:
+  - N: 16
+  - K: 1024
+  - P: 1
+  - Q: 1
+  - C: 64
+  - R: 1
+  - S: 1
+  0:
+  - N: 1
+  - K: 1
+  - P: 1
+  - Q: 1
+  - C: 1
+  - R: 1
+  - S: 1
+TensorAttr:
+  In: 16b
+  F: 16b
+  Out: 16b
+Compute: Out[n,p,q,k] += In[n,p+r,q+s,c] * F[k,r,s,c]
+Layout-Pragma:
+  cache: false
+  bit: bit-parallel
+  streaming:
+    In: true
+    F: false
+    Out: false
+  sharing:
+    block: true
+    PU: false
+    system: 0
+  interleaving: true

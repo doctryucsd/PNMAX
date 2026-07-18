@@ -1,0 +1,182 @@
+# ============================================================================
+#  GPAM geometry-sweep exemplar: HBM-PIM, pu-4 / hmat-16 / vmat-64
+#
+#  One geometry-sweep variant authored end-to-end as a GPAM two-file spec.
+#  It demonstrates the "generator-filled" sweep mode: unlike the baseline
+#  specs (data/archs/baseline/), whose tech-DBs hard-code hand-calibrated
+#  aggregates, every cost in this spec's tech-DB
+#  (hbm_pim__pu-4__hmat-16__vmat-64_tech_db.yaml) is the value the PPA
+#  characterization DB produces for THIS geometry through the shipped
+#  generator:
+#
+#      data/ppa/generate_arch_from_template.py
+#        --template data/archs/lowered/baseline/hbm_pim.yaml
+#        --num-pu 4 --h-mat 16 --v-mat 64
+#        (defaults: burst_len=4, buffer_size=512B, interconnect=host)
+#
+#  Lowering this spec reproduces the shipped flat sweep file byte-semantically:
+#
+#      uv run gpam-lower \
+#        --arch  data/archs/geometry_exemplar/hbm_pim__pu-4__hmat-16__vmat-64.yaml \
+#        --check data/archs/lowered/geometry_sweep/hbm_pim/hbm_pim__pu-4__hmat-16__vmat-64.yaml
+#      (exit 0 == equivalent)
+#
+#  Geometry (vs the hbm_pim baseline: pu-8 / hmat-16 / vmat-32):
+#      num_pu 4  (half the PUs per channel)  -> hierarchy L2 count 4
+#      v_mat 64  (double the rows per bank)  -> bank capacity 32 MB
+#      row size  512 bit x 16 mats / 8 = 1 KB (unchanged)
+#      burst 4 x 64-bit columns = 256 bit    -> simd_lanes 16 (unchanged)
+#
+#  Topology (hierarchy products match the flat file):
+#      hbm/channel{0..63}/rank0/chip0/{pu{0..3}, bank{0..7}}
+#      -> L5 channel x64, L4 rank x1, L3 chip x1, L2 pu x4      = 256 PUs
+#      -> 8 banks per chip, banks (2u, 2u+1) pairwise-load into pu u
+#         => banks_per_pu 2, 512 banks total
+#  Singleton levels (rank, chip) are spelled as literal path segments
+#  (rank0/chip0) because a graph cannot otherwise represent a count-1 level.
+#  The root segment `hbm` names the root BUS node (not a level kind), so the
+#  lowered hierarchy starts at L5=channel, matching the flat file.
+#
+#  Conventions are identical to data/archs/baseline/hbm_pim.yaml (explicit
+#  reverse edges for store/host-up because the parser is forward-only; each
+#  transfer aggregate on exactly one hop of its path; host link is the only
+#  finite-bandwidth link; bank->bus->bank hub routing for the flat
+#  bank_to_bank_transfer) -- see that file's header for the full rationale.
+# ============================================================================
+
+tech: hbm_pim__pu-4__hmat-16__vmat-64_tech_db.yaml   # generator-mode costs
+
+meta:
+  name: hbm_pim                       # lowers to flat `name`
+  # PU clock: the PPA arch generator emits all sweep variants at a fixed
+  # 400 MHz PU clock (data/ppa/generate_arch_from_template.py), so all
+  # cycle-denominated tech-DB latencies below are 400 MHz PU cycles.
+  # (The hand-calibrated baseline runs at 300 MHz instead.)
+  clock: 400 MHz
+  # Flat total_area_mm2 55.648943, carried verbatim from the shipped flat
+  # file's metadata (area is plot/report metadata only -- not consumed by the
+  # analytical model; see data/archs/lowered/FORMAT.md).
+  total_area_mm2: 55.648943
+
+# ----------------------------------------------------------------------------
+#  Replicated nodes: 64 channels x {8 banks, 4 PUs, 4 register files}
+# ----------------------------------------------------------------------------
+macros:
+  REPLICATE:
+
+    # DRAM banks: 8 per channel (2 per PU), 512 total
+    bank:
+      vars:
+        c: 0:63
+        b: 0:7
+      id_pattern: "bank{c*8 + b}"
+      of:
+        type: mem
+        class: geo_bank
+      hier_pattern: "hbm/channel{c}/rank0/chip0/bank{b}"
+
+    # FP16 SIMD PUs: 4 per channel, 256 total
+    pu:
+      vars:
+        c: 0:63
+        u: 0:3
+      id_pattern: "pu{c*4 + u}"
+      of:
+        type: pu
+        class: geo_pu
+      hier_pattern: "hbm/channel{c}/rank0/chip0/pu{u}"
+
+    # Per-PU register file (BUF): child of its PU, NOT a hierarchy level
+    rf:
+      vars:
+        c: 0:63
+        u: 0:3
+      id_pattern: "rf{c*4 + u}"
+      of:
+        type: buffer
+        class: geo_regfile
+      hier_pattern: "hbm/channel{c}/rank0/chip0/pu{u}/rf"
+
+# ----------------------------------------------------------------------------
+#  Explicit nodes: root bus + host
+# ----------------------------------------------------------------------------
+nodes:
+  hbm:
+    type: bus
+    hier_id: hbm
+  host:
+    type: host
+    hier_id: host
+
+# ----------------------------------------------------------------------------
+#  Edges (all costs come from the link classes in the tech-DB)
+# ----------------------------------------------------------------------------
+edges:
+
+  # -- load path: banks (2u, 2u+1) -> register file of pu u  [aggregate hop]
+  - src: bank{c*8 + 2*u}
+    dst: rf{c*4 + u}
+    link: bank2rf_load
+    mode: template
+    range:
+      c: 0:63
+      u: 0:3
+  - src: bank{c*8 + 2*u + 1}
+    dst: rf{c*4 + u}
+    link: bank2rf_load
+    mode: template
+    range:
+      c: 0:63
+      u: 0:3
+
+  # -- store path: EXPLICIT reverse edges (forward-only parser)  [aggregate]
+  - src: rf{c*4 + u}
+    dst: bank{c*8 + 2*u}
+    link: rf2bank_store
+    mode: template
+    range:
+      c: 0:63
+      u: 0:3
+  - src: rf{c*4 + u}
+    dst: bank{c*8 + 2*u + 1}
+    link: rf2bank_store
+    mode: template
+    range:
+      c: 0:63
+      u: 0:3
+
+  # -- register file <-> PU: free hops (aggregates sit on the MEM<->BUF hop)
+  - src: rf{i}
+    dst: pu{i}
+    link: rf2pu
+    mode: template
+    range:
+      i: 0:255
+  - src: pu{i}
+    dst: rf{i}
+    link: pu2rf
+    mode: template
+    range:
+      i: 0:255
+
+  # -- host link: downstream + EXPLICIT upstream (only finite-bw link class)
+  - src: host
+    dst: hbm
+    link: host_link
+    mode: cartesian
+  - src: hbm
+    dst: host
+    link: host_link_up
+    mode: cartesian
+
+  # -- host/bus-mediated bank<->bank sharing (flat bank_to_bank_transfer):
+  #    bank -> root bus carries the full aggregate; the free bus -> bank
+  #    return hop doubles as the host-reachability fan-out
+  - src: bank*
+    dst: hbm
+    link: bank2bank
+    mode: cartesian
+  - src: hbm
+    dst: bank*
+    link: bank2bank_down
+    mode: cartesian
