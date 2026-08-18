@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Streaming trade-off scatter, facets by architecture (Fig 10).
+"""Streaming trade-off scatter, facets by architecture (Fig 11).
 
 Renders the "no-streaming" latency-memory trade-off figure.
 Each point is the best-latency mapping of a Fig-8 Pareto front, plotted as the
@@ -44,10 +44,10 @@ from matplotlib.ticker import FuncFormatter
 # ---- import the production figure module by path (data pipeline + constants) ----
 PLOT_DIR = Path(__file__).resolve().parent
 _spec = importlib.util.spec_from_file_location(
-    "_fig9", PLOT_DIR / "workload_space_streaming_delta_scatter.py"
+    "_fig11", PLOT_DIR / "workload_space_streaming_delta_scatter.py"
 )
 m = importlib.util.module_from_spec(_spec)
-sys.modules["_fig9"] = m
+sys.modules["_fig11"] = m
 _spec.loader.exec_module(m)
 
 REPO_ROOT = Path(os.environ.get("PNMAX_ROOT", Path(__file__).resolve().parents[1]))
@@ -56,7 +56,7 @@ DEFAULT_INPUT_DIR = RESULTS_ROOT / "workload_space_pareto_eval"
 ARCH_TITLE = {"upmem": "UPMEM", "hbm_pim": "HBM-PIM"}
 ARCH_ORDER = ("upmem", "hbm_pim")
 DEFAULT_OUTPUT_PATH = (
-    RESULTS_ROOT / "fig10_streaming" / "streaming_tradeoff_scatter.png"
+    RESULTS_ROOT / "fig11_streaming" / "streaming_tradeoff_scatter.png"
 )
 DPI = 150
 

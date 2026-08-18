@@ -10,13 +10,13 @@
 ## What it is used for in this artifact
 
 UniNDP is the primary **simulator-validation baseline** and the source of the
-**UniNDP baseline mappings** in the Fig. 9 Pareto comparison:
+**UniNDP baseline mappings** in the Fig. 10 Pareto comparison:
 
 1. **Validation (Fig. 8 / Table 4):** PNMAX's analytical latency/energy model is
    validated against UniNDP's cycle-accurate near-DRAM simulator (HBM-PIM and
    UPMEM targets). The PNMAX adapter is `src/pnmax/simulators/unindp/` and the
    CLI `run-unindp`.
-2. **Fig. 9 UniNDP baseline:** UniNDP's compiler chooses a mapping for each
+2. **Fig. 10 UniNDP baseline:** UniNDP's compiler chooses a mapping for each
    kernel; that mapping is translated into a PNMAX workload YAML and re-costed on
    the same analytical model, giving the "UniNDP" points in the Pareto grid.
    See `derive_baselines.md` (recipe) and `derive_baselines.sh` (runnable demo).

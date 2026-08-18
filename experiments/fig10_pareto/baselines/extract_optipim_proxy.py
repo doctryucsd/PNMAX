@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Extract the OptiPIM *searched-proxy* baseline from exhaustive random-search traces.
 
-The OptiPIM comparison point in the Fig. 9 Pareto grid is a **searched proxy**, not
+The OptiPIM comparison point in the Fig. 10 Pareto grid is a **searched proxy**, not
 a run of the OptiPIM ILP tool: it is the best-of-N PNMAX random mappings for each
 HBM-PIM workload (N = 4096 at full scale, i.e. two independent 2048-trace random
 searches). See README.md for the rationale.
@@ -25,7 +25,7 @@ from pnmax.database import Arch, Workload
 from pnmax.dse.workload_eval import evaluate_workload_analytical_report
 
 
-# experiments/fig09_pareto/baselines/ -> repo root is 3 levels up.
+# experiments/fig10_pareto/baselines/ -> repo root is 3 levels up.
 REPO_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_ROOT = Path(os.environ.get("PNMAX_RESULTS_ROOT", str(REPO_ROOT / "results")))
 
@@ -76,7 +76,7 @@ def parse_args():
     parser.add_argument("--workers", type=int, default=64)
     parser.add_argument(
         "--output",
-        default=str(RESULTS_ROOT / "fig09_pareto" / "optipim" / "optipim_proxy.csv"),
+        default=str(RESULTS_ROOT / "fig10_pareto" / "optipim" / "optipim_proxy.csv"),
     )
     return parser.parse_args()
 

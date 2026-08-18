@@ -4,7 +4,7 @@
 The artifact deliberately does not ship ``data/nn_models/`` — the end-to-end
 workload manifests (``data/workloads/end_to_end/<model>/manifest.json``) embed
 every original CSV row verbatim in their ``layers[].raw_row`` fields. The
-end-to-end pipelines (Fig. 12 geometry sweep) hard-code their model dirs as
+end-to-end pipelines (Fig. 14 geometry sweep) hard-code their model dirs as
 ``<repo>/data/nn_models/<model>``, so this script both
 
 1. writes ``<out>/data/nn_models/<model>/layer_params.csv`` for every model
@@ -18,7 +18,7 @@ end-to-end pipelines (Fig. 12 geometry sweep) hard-code their model dirs as
 
 Usage:
     uv run python experiments/_lib/reconstruct_layer_params.py \
-        --out <results>/fig12_geometry/shadow_root --shadow-root
+        --out <results>/fig14_geometry/shadow_root --shadow-root
 """
 
 from __future__ import annotations

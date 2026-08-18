@@ -32,7 +32,7 @@ generated as the standard flow by `setup.sh` (stage script
 records its inputs in its header comment. Shipped as-is (not generated at setup):
 `lowered/baseline/` (hand-lowered from the GPAM baselines) and
 `lowered/activation/` (frozen characterization inputs with no in-repo
-generator, including the pinned fig15 search base in
+generator, including the pinned fig17 search base in
 `lowered/activation/search_base/`).
 
 ## Authoring GPAM specs

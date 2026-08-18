@@ -86,11 +86,11 @@ AXIS_LABELS: dict[str, str] = {
     "energy": "Energy (normalized to baseline)",
 }
 BASELINE_LABEL = "UniNDP baseline"
-DEFAULT_OPTIPIM_PROXY_CSV = RESULTS_ROOT / "fig09_pareto" / "optipim_proxy.csv"
+DEFAULT_OPTIPIM_PROXY_CSV = RESULTS_ROOT / "fig10_pareto" / "optipim_proxy.csv"
 OPTIPIM_LABEL = "OptiPIM"
 OPTIPIM_MARKER_STYLE = dict(color="#2196F3", marker="*", s=120, linewidths=1.5, zorder=6)
 # CINM (Cinnamon) compiler-tiling marker on the UPMEM subfigs (mirror of OptiPIM).
-DEFAULT_CINM_PROXY_CSV = RESULTS_ROOT / "fig09_pareto" / "cinm_proxy.csv"
+DEFAULT_CINM_PROXY_CSV = RESULTS_ROOT / "fig10_pareto" / "cinm_proxy.csv"
 CINM_LABEL = "CINM"
 CINM_MARKER_STYLE = dict(color="#C2185B", marker="D", s=80, linewidths=1.5, zorder=6)
 MISSING_CURRENT_MODE_LABEL = "No current-mode data"

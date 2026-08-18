@@ -119,7 +119,7 @@ def parse_args() -> argparse.Namespace:
         "--normalized-only",
         action="store_true",
         help=(
-            "Render only the (a)-normalized figure (Fig. 11); "
+            "Render only the (a)-normalized figure (Fig. 12); "
             "skip the per-bar-normalized variant."
         ),
     )

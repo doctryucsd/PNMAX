@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# experiments/fig15_reduction/run.sh — Fig. 15: reduction placement
+# experiments/fig17_reduction/run.sh — Fig. 17: reduction placement
 # (bank / channel / base-die) Pareto fronts for bmm_llama256-3 on HBM-PIM,
 # normalized to the AttAcc-style point.
 #
 # Usage: ./run.sh [--smoke] [--dry-run] [--workers N] [--seed N]
 #   default : full scale (2048-trace pools)
 #   --smoke : minutes-long end-to-end check (8-trace pools)
-# Writes only under the results root (fig15_reduction/ + unindp_baseline/).
+# Writes only under the results root (fig17_reduction/ + unindp_baseline/).
 #
 # Pipeline (two-stage inclusive semantics, encoded in the driver):
 # (1) UniNDP baseline; (2) llama256-3 mapping pool on the baseline geometry
@@ -22,19 +22,19 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../_lib/common.sh
 . "${SCRIPT_DIR}/../_lib/common.sh"
 
-pnmax_init "fig15_reduction" "$@"
-phase_banner "fig15_reduction — Fig. 15: reduction placement (bank/channel/base-die)"
+pnmax_init "fig17_reduction" "$@"
+phase_banner "fig17_reduction — Fig. 17: reduction placement (bank/channel/base-die)"
 
 # shellcheck source=../_lib/pipeline.sh
 . "${SCRIPT_DIR}/../_lib/pipeline.sh"
 
 # ---------------------------------------------------------------------------
 # Experiment defaults (single block). Arch basis:
-# Fig 15 uses data/archs/lowered/activation/{hbm_pim__pu-8__hmat-16
+# Fig 17 uses data/archs/lowered/activation/{hbm_pim__pu-8__hmat-16
 # __vmat-32,base_die,channel_level}.yaml (config1/2/3) with mapping pools
 # searched on the pinned copy under lowered/activation/search_base/ (frozen
 # characterization inputs at the eval archs' vintage — see the README there;
-# the generated geometry_sweep family belongs to fig12).
+# the generated geometry_sweep family belongs to fig14).
 # ---------------------------------------------------------------------------
 TOKEN=llama256-3
 SEARCH_ARCH_FILE="${REPO_ROOT}/data/archs/lowered/activation/search_base/hbm_pim__pu-8__hmat-16__vmat-32.yaml"
@@ -167,16 +167,16 @@ run_py python "${SCRIPT_DIR}/puunion_recost.py" \
 step_end
 
 # ---------------------------------------------------------------------------
-phase_banner "phase 5/5 — render Fig. 15"
+phase_banner "phase 5/5 — render Fig. 17"
 # ---------------------------------------------------------------------------
-step_start "reduction-place Pareto front (lat-mem, Fig. 15)"
+step_start "reduction-place Pareto front (lat-mem, Fig. 17)"
 run_py python "${REPO_ROOT}/plot/reduction_place_pareto.py" \
   --input-root "${INCLUSIVE_ROOT}/hbm_pim" \
   --channel-input-root "${PUUNION_ROOT}" \
   --output-dir "${RESULTS_DIR}/figures" \
   --pairs lat-mem
 run_cmd mv -f "${RESULTS_DIR}/figures/reduction_place_pareto_${TOKEN}_lat-mem.pdf" \
-  "${RESULTS_DIR}/figures/fig15.pdf"
+  "${RESULTS_DIR}/figures/fig17.pdf"
 step_end
 
-phase_banner "fig15_reduction done — figures: ${RESULTS_DIR}/figures"
+phase_banner "fig17_reduction done — figures: ${RESULTS_DIR}/figures"

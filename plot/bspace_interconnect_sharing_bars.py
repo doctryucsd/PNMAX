@@ -105,7 +105,7 @@ CONFIG_COLORS = {
 }
 ARCH_LABEL = {"upmem": "UPMEM", "hbm_pim": "HBM-PIM"}
 
-DEFAULT_OUTPUT_DIR = RESULTS_ROOT / "fig14_interconnect"
+DEFAULT_OUTPUT_DIR = RESULTS_ROOT / "fig16_interconnect"
 DEFAULT_OUTPUT = DEFAULT_OUTPUT_DIR / "bspace_interconnect_sharing_bars.pdf"
 
 
@@ -125,7 +125,7 @@ def parse_args() -> argparse.Namespace:
         help=(
             "bank_to_bank cost for the host config: 'congested' (the 16x "
             "degraded host interconnect baked into the sweep center files, "
-            "the Fig. 14 default) or 'x1' (original host cost)"
+            "the Fig. 16 default) or 'x1' (original host cost)"
         ),
     )
     parser.add_argument(

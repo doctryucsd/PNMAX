@@ -17,8 +17,8 @@ same positions as UPMEM with gaps at /4 and x4. Rows (b)/(c) reuse
 geometry_sweep_compensated_bc.py.
 
 Inputs (each a workload-space pareto-eval root <root>/<arch>/<workload>/<ts>/pareto_frontiers.csv):
-  --bc-root     compensated (b)/(c) sweep   (default results/fig12_geometry/compensated_bc_host_congested/pareto_eval)
-  --burst-root  isolated burst (a) sweep    (default results/fig12_geometry/isolated_burst_sweep_host_congested/pareto_eval)
+  --bc-root     compensated (b)/(c) sweep   (default results/fig14_geometry/compensated_bc_host_congested/pareto_eval)
+  --burst-root  isolated burst (a) sweep    (default results/fig14_geometry/isolated_burst_sweep_host_congested/pareto_eval)
 """
 
 import argparse
@@ -41,7 +41,7 @@ import geometry_sweep_compensated_bc as comp  # noqa: E402
 
 REPO_ROOT = Path(os.environ.get("PNMAX_ROOT", Path(__file__).resolve().parents[1]))
 RESULTS_ROOT = Path(os.environ.get("PNMAX_RESULTS_ROOT", str(REPO_ROOT / "results")))
-DEFAULT_RESULTS_DIR = RESULTS_ROOT / "fig12_geometry"
+DEFAULT_RESULTS_DIR = RESULTS_ROOT / "fig14_geometry"
 DEFAULT_BC_ROOT = DEFAULT_RESULTS_DIR / "compensated_bc_host_congested" / "pareto_eval"
 DEFAULT_BURST_ROOT = DEFAULT_RESULTS_DIR / "isolated_burst_sweep_host_congested" / "pareto_eval"
 

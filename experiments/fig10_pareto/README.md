@@ -1,4 +1,4 @@
-# fig09_pareto — Fig. 9: mapping-space Pareto-front grid (R3)
+# fig10_pareto — Fig. 10: mapping-space Pareto-front grid (R3)
 
 Produces the Pareto-front grid: 9 kernels x {UPMEM, HBM-PIM} x DSE spaces
 (a)-(d), with the UniNDP-baseline point and the OptiPIM searched-proxy / CINM
@@ -17,12 +17,12 @@ Phases
 2. Seeded random search of spaces a-d per (arch, kernel, streaming) into the
    shared pool `results/workload_space_random_search/` (2048 traces per space
    delta at full scale). Completed cells are reused by the
-   fig10/fig11/fig13/fig14 buttons.
+   fig11/fig12/fig15/fig16 buttons.
 3. Pareto evaluation per kernel into `results/workload_space_pareto_eval/`.
 4. Baselines: OptiPIM searched proxy (best of 2x2048 random HBM-PIM mappings,
    second pool at seed+1) and CINM compiler tiling (`cinm-opt`, built by
    default by `./setup.sh`; full mode requires it unless `PNMAX_SKIP_CINM=1`).
-5. The Fig. 9 grid (latency vs footprint), rendered as `figures/fig09.pdf`.
+5. The Fig. 10 grid (latency vs footprint), rendered as `figures/fig10.pdf`.
 
 Runtimes: smoke `~35 s` measured (cold); full `~6.5 h` measured at 64 workers
 (baselines ~5 min, search pool ~80 min, Pareto evals ~5 h; a re-run with the

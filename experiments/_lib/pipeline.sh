@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # experiments/_lib/pipeline.sh — shared pipeline steps for the workload-space
-# experiment family (Figs 9, 10, 11, 13, 14, 15). Source AFTER common.sh +
+# experiment family (Figs 10, 11, 12, 15, 16, 17). Source AFTER common.sh +
 # pnmax_init.
 #
 # The DSE experiments share one mapping-search pool and one Pareto-eval
@@ -29,7 +29,7 @@ PARETO_EVAL_ROOT="${RESULTS_ROOT}/workload_space_pareto_eval"
 export PNMAX_UNINDP_BASELINE_DIR="${BASELINE_DIR}"
 
 # Per-pipeline experiment-default architecture files — the BASE
-# (non-x16) baselines are what the Fig 8-11/13/15 buttons consume.
+# (non-x16) baselines are what the Fig 8/10-12/15/17 buttons consume.
 ARCH_FILE_HBM="${REPO_ROOT}/data/archs/lowered/baseline/hbm_pim.yaml"
 ARCH_FILE_UPMEM="${REPO_ROOT}/data/archs/lowered/baseline/upmem.yaml"
 ARCH_FILE_ATTACC="${REPO_ROOT}/data/archs/lowered/baseline/attacc.yaml"
@@ -240,9 +240,9 @@ ensure_pareto_eval() {
   fi
 }
 
-# ensure_fig9_inputs <num-traces> <arch...> — baselines + pool + eval for the
-# given archs (the shared front half of Figs 9/10/11).
-ensure_fig9_inputs() {
+# ensure_fig10_inputs <num-traces> <arch...> — baselines + pool + eval for the
+# given archs (the shared front half of Figs 10/11/12).
+ensure_fig10_inputs() {
   local num=$1
   shift
   local arch token pairs=()

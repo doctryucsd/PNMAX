@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fig 15: build the INCLUSIVE channel-level pool (PU-union re-cost).
+"""Fig 17: build the INCLUSIVE channel-level pool (PU-union re-cost).
 
 Reduction-place inclusivity is an EVAL-side property (see
 plot/reduction_place_pareto.py): the channel level pools the more-local bank

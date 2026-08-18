@@ -4,8 +4,8 @@
 # Usage: ./setup.sh [--without-cinm] [--check-gpam-only]
 #   --without-cinm     skip the CINM baseline build (Step 6). CINM is built by
 #                      default; this opt-out avoids its large LLVM download and
-#                      multi-hour build when the CINM points in Fig. 9 are not
-#                      needed (render Fig. 9 without them via PNMAX_SKIP_CINM=1)
+#                      multi-hour build when the CINM points in Fig. 10 are not
+#                      needed (render Fig. 10 without them via PNMAX_SKIP_CINM=1)
 #   --check-gpam-only  run only the fast GPAM equivalence gate (uv env + check)
 #                      and skip the external tool build + PPA generation
 #                      (quick verification; produces no derived data)
@@ -205,8 +205,8 @@ if [ "${WITH_CINM}" = "1" ]; then
   fi
 else
   banner "Step 6/6: CINM baseline"
-  echo "skipped (--without-cinm): the CINM points in Fig. 9 will be absent —"
-  echo "  render Fig. 9 without them via PNMAX_SKIP_CINM=1."
+  echo "skipped (--without-cinm): the CINM points in Fig. 10 will be absent —"
+  echo "  render Fig. 10 without them via PNMAX_SKIP_CINM=1."
 fi
 
 banner "Setup finished"

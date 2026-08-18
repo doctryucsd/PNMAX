@@ -29,16 +29,16 @@ from matplotlib.ticker import LogFormatterMathtext, LogLocator, NullFormatter, N
 REPO_ROOT = Path(os.environ.get("PNMAX_ROOT", Path(__file__).resolve().parents[1]))
 RESULTS_ROOT = Path(os.environ.get("PNMAX_RESULTS_ROOT", str(REPO_ROOT / "results")))
 DEFAULT_INCLUSIVE_ROOT = (
-    RESULTS_ROOT / "fig15_reduction" / "pareto_eval_channel_inclusive" / "hbm_pim"
+    RESULTS_ROOT / "fig17_reduction" / "pareto_eval_channel_inclusive" / "hbm_pim"
 )
 DEFAULT_INCLUSIVE_CHANNEL_ROOT = (
     REPO_ROOT
     / "results"
-    / "fig15_reduction"
+    / "fig17_reduction"
     / "pareto_eval_channel_inclusive_PUunion"
     / "hbm_pim"
 )
-DEFAULT_OUTDIR = RESULTS_ROOT / "fig15_reduction"
+DEFAULT_OUTDIR = RESULTS_ROOT / "fig17_reduction"
 
 METRICS = ("latency_cycles", "mem_footprint_bytes", "energy")
 REQUIRED_EVAL_COLUMNS = ("config_id", "status", "state_hash", *METRICS)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# experiments/fig12_geometry/run.sh — Fig. 12: fixed-capacity DRAM geometry
+# experiments/fig14_geometry/run.sh — Fig. 14: fixed-capacity DRAM geometry
 # sweeps ((a) PU tile size, (b) BG x row-size inverse, (c) BG x #rows inverse)
 # for OPT-2.7B end-to-end on UPMEM + HBM-PIM.
 #
@@ -8,13 +8,13 @@
 #             end-to-end sweep also covers the other two end-to-end models)
 #   --smoke : minutes-long end-to-end check (2 geometries/family, 1 extreme
 #             rung, 8 traces; missing rungs render as gaps)
-# Writes only under the results root (fig12_geometry/).
+# Writes only under the results root (fig14_geometry/).
 #
 # Pipeline: (1) reconstruct nn_models/layer_params.csv from the end-to-end
 # workload manifests into a PNMAX_ROOT shadow root (layer_params is not
 # shipped); (2) geometry-sweep end-to-end random searches for
 # both arch families; (3) the /4, x4 and burst extreme rungs (searched
-# separately); (4) re-cost every searched OPT mapping on the Fig 12 cost
+# separately); (4) re-cost every searched OPT mapping on the Fig 14 cost
 # bases and render.
 #
 # Cost bases: searches run on lowered/geometry_sweep/**;
@@ -28,8 +28,8 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../_lib/common.sh
 . "${SCRIPT_DIR}/../_lib/common.sh"
 
-pnmax_init "fig12_geometry" "$@"
-phase_banner "fig12_geometry — Fig. 12: fixed-capacity geometry sweeps (OPT-2.7B)"
+pnmax_init "fig14_geometry" "$@"
+phase_banner "fig14_geometry — Fig. 14: fixed-capacity geometry sweeps (OPT-2.7B)"
 
 # shellcheck source=../_lib/pipeline.sh
 . "${SCRIPT_DIR}/../_lib/pipeline.sh"
@@ -102,7 +102,7 @@ else
 fi
 
 for fam in upmem hbm_pim; do
-  step_start "end-to-end sweep: ${fam} (all end-to-end models; OPT feeds Fig 12)"
+  step_start "end-to-end sweep: ${fam} (all end-to-end models; OPT feeds Fig 14)"
   # --workload-root is an OUTPUT dir: the pipeline regenerates the per-layer
   # workload YAMLs + manifest there from layer_params.csv. Keep it under the
   # results root — pointing it at data/workloads/end_to_end would rewrite the
@@ -170,7 +170,7 @@ if [ "${RECOST_SAMPLES}" != "0" ]; then
 fi
 run_py python "${REPO_ROOT}/plot/geometry_sweep_abc_opt.py" "${recost_args[@]}"
 run_cmd mv -f "${RESULTS_DIR}/figures/geometry_sweep_abc_opt_line.pdf" \
-  "${RESULTS_DIR}/figures/fig12.pdf"
+  "${RESULTS_DIR}/figures/fig14.pdf"
 step_end
 
-phase_banner "fig12_geometry done — figures: ${RESULTS_DIR}"
+phase_banner "fig14_geometry done — figures: ${RESULTS_DIR}"

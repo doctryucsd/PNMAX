@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plot the TRUE compensated fixed-capacity geometry sweep for PNMAX Figure 11 (b)/(c).
+"""Plot the TRUE compensated fixed-capacity geometry sweep for PNMAX Figure 14 (b)/(c).
 
 This is the *compensated* ("compromise") construction: each subplot is ONE sweep over
 bank-group size (pu), with the OTHER knob compensating to hold die capacity FIXED.
@@ -37,7 +37,7 @@ from matplotlib.lines import Line2D
 
 REPO_ROOT = Path(os.environ.get("PNMAX_ROOT", Path(__file__).resolve().parents[1]))
 RESULTS_ROOT = Path(os.environ.get("PNMAX_RESULTS_ROOT", str(REPO_ROOT / "results")))
-DEFAULT_OUTPUT_DIR = RESULTS_ROOT / "fig12_geometry"
+DEFAULT_OUTPUT_DIR = RESULTS_ROOT / "fig14_geometry"
 
 ARCHES = ("upmem", "hbm_pim")
 METRICS = {
@@ -85,7 +85,7 @@ _ARCH_CACHE: dict[str, dict[str, float] | None] = {}
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Plot the TRUE compensated fixed-capacity PU sweep (Fig 11 b/c)."
+        description="Plot the TRUE compensated fixed-capacity PU sweep (Fig 14 b/c)."
     )
     parser.add_argument(
         "pareto_root",
@@ -99,7 +99,7 @@ def parse_args():
         "--output-dir",
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
-        help="output directory for PDF figures (default: results/fig12_geometry)",
+        help="output directory for PDF figures (default: results/fig14_geometry)",
     )
     parser.add_argument("--dpi", type=int, default=200, help="output figure DPI")
     parser.add_argument(

@@ -90,7 +90,7 @@ rm -rf external/dreamram/data
 banner "stage 3/3 — derived architecture families (5 builders)"
 # ---------------------------------------------------------------------------
 # geometry_sweep/{upmem,hbm_pim}: the evaluated geometry-variant sets.
-# fig12's search enumerates these directories, so exactly the evaluated
+# fig14's search enumerates these directories, so exactly the evaluated
 # variants are generated: upmem variants 1-9; hbm_pim variants 1-4,7-9
 # (variants 5-6 are not part of the evaluated hbm_pim geometry set, and
 # variants 10-15 ship under their own buffer_/interconnect_sweep families).

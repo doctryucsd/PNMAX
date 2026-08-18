@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
-# experiments/fig10_streaming/run.sh — Fig. 10: latency/footprint trade-off of
-# DISABLING streaming (percent change of each front's best-latency mapping,
-# faceted by architecture).
+# experiments/fig12_breakdown/run.sh — Fig. 12: latency breakdown of the
+# best-latency HBM-PIM mappings per DSE space (normalized stacked bars).
 #
 # Usage: ./run.sh [--smoke] [--dry-run] [--workers N] [--seed N]
-#   default : full scale (shares the Fig 9 search pool + Pareto evals;
-#             completed cells are reused, so after fig09_pareto only the
-#             render remains)
+#   default : full scale (shares the Fig 10 HBM-PIM search pool +
+#             Pareto evals; completed cells are reused)
 #   --smoke : minutes-long end-to-end check (1 kernel, 8 traces per space)
-# Writes only under the results root (shared pool + fig10_streaming/).
+# Writes only under the results root (shared pool + fig12_breakdown/).
 set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
@@ -16,18 +14,19 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../_lib/common.sh
 . "${SCRIPT_DIR}/../_lib/common.sh"
 
-pnmax_init "fig10_streaming" "$@"
-phase_banner "fig10_streaming — Fig. 10: no-streaming latency/footprint trade-off"
+pnmax_init "fig12_breakdown" "$@"
+phase_banner "fig12_breakdown — Fig. 12: HBM-PIM latency breakdown per DSE space"
 
 # shellcheck source=../_lib/pipeline.sh
 . "${SCRIPT_DIR}/../_lib/pipeline.sh"
 
 # ---------------------------------------------------------------------------
 # Experiment defaults (single block; arch files via pipeline.sh).
+# The figure only uses HBM-PIM runs.
 # ---------------------------------------------------------------------------
 FULL_NUM_TRACES=2048
 SMOKE_NUM_TRACES=8
-ARCHS=(upmem hbm_pim)
+ARCHS=(hbm_pim)
 
 if [ "${PNMAX_SMOKE}" = "1" ]; then
   NUM_TRACES="${SMOKE_NUM_TRACES}"
@@ -37,17 +36,21 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-phase_banner "phase 1/2 — ensure the Fig 9 search pool + Pareto evals"
+phase_banner "phase 1/2 — ensure the Fig 10 HBM-PIM search pool + Pareto evals"
 # ---------------------------------------------------------------------------
-ensure_fig9_inputs "${NUM_TRACES}" "${ARCHS[@]}"
+ensure_fig10_inputs "${NUM_TRACES}" "${ARCHS[@]}"
 
 # ---------------------------------------------------------------------------
-phase_banner "phase 2/2 — render the streaming trade-off scatter"
+phase_banner "phase 2/2 — render the latency-breakdown bars"
 # ---------------------------------------------------------------------------
-step_start "streaming trade-off scatter"
-run_py python "${REPO_ROOT}/plot/streaming_tradeoff_scatter.py" \
-  --input-dir "${PARETO_EVAL_ROOT}" \
-  --output "${RESULTS_DIR}/figures/fig10.pdf"
+step_start "latency breakdown (normalized stacked bars)"
+run_py python "${REPO_ROOT}/plot/latency_breakdown.py" \
+  "${PARETO_EVAL_ROOT}" \
+  --output-dir "${RESULTS_DIR}/figures" \
+  --normalized-only
+run_cmd mv -f \
+  "${RESULTS_DIR}/figures/workload_space_pareto_latency_breakdown_hbm_pim_streaming_only_normalized_to_a.pdf" \
+  "${RESULTS_DIR}/figures/fig12.pdf"
 step_end
 
-phase_banner "fig10_streaming done — figures: ${RESULTS_DIR}/figures"
+phase_banner "fig12_breakdown done — figures: ${RESULTS_DIR}/figures"

@@ -1,6 +1,6 @@
 # Deriving the UniNDP baseline mappings
 
-The PNMAX Fig. 9 Pareto grid compares PNMAX-searched mappings against the
+The PNMAX Fig. 10 Pareto grid compares PNMAX-searched mappings against the
 **UniNDP** compiler's own best mapping for each of the 9 kernels on each of the
 two baseline architectures (UPMEM, HBM-PIM). Those 18 UniNDP baselines are
 **derived at run time** by compiling each kernel with the vendored UniNDP and
@@ -51,7 +51,7 @@ from the PNMAX development repo by the framework-import task). It has three sub-
 emitted mapping, so it depends on the `pnmax` package. `derive_baselines.sh`
 here intentionally does **not** depend on `pnmax` so the derivation can be
 demonstrated/executed standalone; the in-tree helper is the production path used
-by the Fig. 9 driver.
+by the Fig. 10 driver.
 
 ## UniNDP `mm` workload size ⇄ PNMAX Problem
 
@@ -136,7 +136,7 @@ The converter transcribes UniNDP's `best_design` into the PNMAX schema
 exactly; with the SIMD-lanes clamp the derivation reproduces the reference
 baseline mappings deterministically.
 
-> Runtime note: the production Fig. 9 driver invokes the in-tree
+> Runtime note: the production Fig. 10 driver invokes the in-tree
 > `helpers/run_unindp_compile.py` (which additionally validates the emitted YAML
 > through `pnmax.database.Workload`). That path depends on the `pnmax` package;
 > the standalone scripts here do not and are what was executed for this report.

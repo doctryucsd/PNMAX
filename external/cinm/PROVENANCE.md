@@ -15,7 +15,7 @@
 **FLAG for review.** The PNMAX development repo's `external/cinm` submodule is
 pinned at `0d132a3`, but this artifact vendors `f776a07` instead. Rationale:
 
-- The reference Fig. 9 CINM baseline (`experiments/fig09_pareto/`) was
+- The reference Fig. 10 CINM baseline (`experiments/fig10_pareto/`) was
   produced with the `cinm-opt` from a
   local `cinm-jun2024` checkout (the path the development repo's original
   drivers hardcoded;
@@ -33,7 +33,7 @@ pinned at `0d132a3`, but this artifact vendors `f776a07` instead. Rationale:
   ancestor of `0d132a3`.
 
 If the newer `0d132a3` is ever preferred, `setup.sh --with-cinm` would need to
-fetch LLVM 20.1 instead; the drivers and Fig. 9 comparison are unchanged.
+fetch LLVM 20.1 instead; the drivers and Fig. 10 comparison are unchanged.
 
 ## LLVM pin — public, no custom patches
 
@@ -55,8 +55,8 @@ fetch LLVM 20.1 instead; the drivers and Fig. 9 comparison are unchanged.
 
 ## What it is used for in this artifact
 
-CINM is a Fig. 9 baseline (`experiments/fig09_pareto/`): the drivers in
-`experiments/fig09_pareto/baselines/` emit each kernel as a `cinm.compute` GEMM,
+CINM is a Fig. 10 baseline (`experiments/fig10_pareto/`): the drivers in
+`experiments/fig10_pareto/baselines/` emit each kernel as a `cinm.compute` GEMM,
 run `cinm-opt --cinm-tiling` to obtain CINM's compiler tiling, and re-cost that
 mapping on the PNMAX analytical model (UPMEM-normalized). Inputs used: the
 `testbench/*.mlir` shapes (present here) and hardcoded UPMEM HW-reference numbers

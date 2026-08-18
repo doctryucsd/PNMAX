@@ -2,7 +2,7 @@
 """Approach A — run OUR Fig-9 DNN layers through CINM (Cinnamon), extract the
 compiler tiling, re-cost it on the PNMAX analytical model (UPMEM baseline-normalized),
 and write the CINM proxy CSV that feeds the "CINM" marker on the UPMEM
-subfigures of the Fig. 9 Pareto grid.
+subfigures of the Fig. 10 Pareto grid.
 
 Each layer's shape comes from the derived UniNDP-baseline workload
 ``<wl>_upmem.yaml`` (never invented); each layer is expressed as a
@@ -45,7 +45,7 @@ from pnmax.dse.workload_eval import evaluate_workload_analytical_report
 # Reuse the Approach-B correspondence helpers verbatim.
 from cinm_solution_on_our_model import _load_arch, build, workgroup_geometry  # noqa: E402
 
-# experiments/fig09_pareto/baselines/ -> repo root is 3 levels up.
+# experiments/fig10_pareto/baselines/ -> repo root is 3 levels up.
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 # In-repo cinm-opt (built by setup.sh by default); override with CINM_OPT=...
@@ -65,7 +65,7 @@ UNINDP_BASELINE_DIR = Path(
 # Output + DSE-results roots (the Fig-9 DSE runs produce these under the results root).
 RESULTS_ROOT = Path(os.environ.get("PNMAX_RESULTS_ROOT", str(REPO_ROOT / "results")))
 OUT_DIR = Path(
-    os.environ.get("PNMAX_CINM_OUT", str(RESULTS_ROOT / "fig09_pareto" / "cinm"))
+    os.environ.get("PNMAX_CINM_OUT", str(RESULTS_ROOT / "fig10_pareto" / "cinm"))
 )
 MLIR_IN = OUT_DIR / "mlir_in"
 MLIR_OUT = OUT_DIR / "mlir_out"

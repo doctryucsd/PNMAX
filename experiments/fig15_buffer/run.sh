@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# experiments/fig13_buffer/run.sh — Fig. 13: buffer-size sensitivity of
+# experiments/fig15_buffer/run.sh — Fig. 15: buffer-size sensitivity of
 # selected fc_bert-72 mappings on HBM-PIM (128B..2KB register-file variants).
 #
 # Usage: ./run.sh [--smoke] [--dry-run] [--workers N] [--seed N]
 #   default : full scale (2048-trace search pool; 30x3 sampled sets)
 #   --smoke : minutes-long end-to-end check (8 traces, 4x2 sampled sets)
-# Writes only under the results root (shared pool + fig13_buffer/).
+# Writes only under the results root (shared pool + fig15_buffer/).
 #
-# Pipeline: (1) UniNDP baseline + fc_bert-72 mapping pool (shared with Fig 9),
+# Pipeline: (1) UniNDP baseline + fc_bert-72 mapping pool (shared with Fig 10),
 # (2) buffer-sweep random-set latency evaluation over the 5 buffer variants,
 # (3) render the selected-mappings figure.
 set -Eeuo pipefail
@@ -17,8 +17,8 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../_lib/common.sh
 . "${SCRIPT_DIR}/../_lib/common.sh"
 
-pnmax_init "fig13_buffer" "$@"
-phase_banner "fig13_buffer — Fig. 13: buffer-size sensitivity (fc_bert-72 on HBM-PIM)"
+pnmax_init "fig15_buffer" "$@"
+phase_banner "fig15_buffer — Fig. 15: buffer-size sensitivity (fc_bert-72 on HBM-PIM)"
 
 # shellcheck source=../_lib/pipeline.sh
 . "${SCRIPT_DIR}/../_lib/pipeline.sh"
@@ -27,7 +27,7 @@ phase_banner "fig13_buffer — Fig. 13: buffer-size sensitivity (fc_bert-72 on H
 # Experiment defaults (single block). Arch basis:
 # data/archs/lowered/buffer_sweep/hbm_pim (b2b x1 variants), restricted to
 # the figure's 5 buffer sizes (128B..2KB, midpoint 512B) — the generated
-# family also carries 32B/64B variants that Fig 13 does not include, so the
+# family also carries 32B/64B variants that Fig 15 does not include, so the
 # driver materializes a 5-variant subset.
 # ---------------------------------------------------------------------------
 TOKEN=bert-72                       # workload display name: fc_bert-72
@@ -66,7 +66,7 @@ phase_banner "phase 1/3 — UniNDP baseline + fc_bert-72 mapping pool"
 step_start "UniNDP baseline (bert-72 on hbm_pim)"
 ensure_unindp_baselines "${TOKEN}:hbm_pim"
 step_end
-step_start "mapping pool (spaces a-d, shared with Fig 9)"
+step_start "mapping pool (spaces a-d, shared with Fig 10)"
 ensure_search_cell \
   hbm_pim "${ARCH_FILE_HBM}" \
   "${BASELINE_DIR}/${TOKEN}_hbm_pim.yaml" \
@@ -107,14 +107,14 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-phase_banner "phase 3/3 — render Fig. 13"
+phase_banner "phase 3/3 — render Fig. 15"
 # ---------------------------------------------------------------------------
 step_start "selected-mappings latency figure"
 run_py python "${REPO_ROOT}/plot/buffer_sweep_workload_space_random_set_latency.py" \
   "${RUN_DIR}" \
   --output-dir "${RESULTS_DIR}/figures"
 run_cmd mv -f "${RESULTS_DIR}/figures/selected_mappings.pdf" \
-  "${RESULTS_DIR}/figures/fig13.pdf"
+  "${RESULTS_DIR}/figures/fig15.pdf"
 step_end
 
-phase_banner "fig13_buffer done — figures: ${RESULTS_DIR}/figures"
+phase_banner "fig15_buffer done — figures: ${RESULTS_DIR}/figures"

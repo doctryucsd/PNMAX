@@ -1,4 +1,4 @@
-# fig15_reduction — Fig. 15: reduction placement (R9)
+# fig17_reduction — Fig. 17: reduction placement (R9)
 
 Pareto fronts of bank- vs channel- vs base-die-level reduction placement for
 bmm_llama256-3 on HBM-PIM, normalized to the AttAcc-style point (best-latency
@@ -19,7 +19,7 @@ frozen at the activation eval archs' characterization vintage — see the README
 in that directory)
 -> stage A plain activation eval (config1 search) -> stage B inclusive eval
 (config1 reuse, `--max-system-sharing 4`) -> channel PU-union re-cost
-(`puunion_recost.py`) -> Pareto plot (`figures/fig15.pdf`).
+(`puunion_recost.py`) -> Pareto plot (`figures/fig17.pdf`).
 
 Arch basis: `data/archs/lowered/activation/{hbm_pim__pu-8__hmat-16__
 vmat-32,base_die,channel_level}.yaml`.

@@ -40,7 +40,7 @@ from pathlib import Path
 from pnmax.database import Arch, Workload
 from pnmax.dse.workload_eval import evaluate_workload_analytical_report
 
-# experiments/fig09_pareto/baselines/ -> repo root is 3 levels up.
+# experiments/fig10_pareto/baselines/ -> repo root is 3 levels up.
 REPO_ROOT = Path(__file__).resolve().parents[3]
 ARCH_PATH = os.environ.get(
     "PNMAX_UPMEM_ARCH", str(REPO_ROOT / "data" / "archs" / "lowered" / "baseline" / "upmem.yaml")

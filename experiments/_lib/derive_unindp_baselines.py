@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Derive the UniNDP-baseline workload mappings (production path).
 
-The Fig. 9 Pareto grid, the Fig. 13 buffer sweep, and the Fig. 15 reduction
+The Fig. 10 Pareto grid, the Fig. 15 buffer sweep, and the Fig. 17 reduction
 study all consume "UniNDP baseline" workload YAMLs: for each evaluation kernel and
 target architecture, UniNDP's own compiler picks its best mapping and that
 mapping is transcribed into a PNMAX nested-loop workload. These files are NOT

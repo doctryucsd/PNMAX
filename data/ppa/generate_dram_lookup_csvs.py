@@ -304,7 +304,7 @@ def required_lookup_tuples() -> dict[str, dict[tuple[int, int, int, int], None]]
         for burst_len in ofat_burst:
             per_arch[arch][(16, base_banks, base_v_mat, burst_len)] = None
 
-    # Iso-capacity arch set (build_iso_capacity_archs.py, fig12 basis): every
+    # Iso-capacity arch set (build_iso_capacity_archs.py, fig14 basis): every
     # (num_pu, h_mat, v_mat, burst) combo that builder generates needs an
     # exact-match row here (generate_arch_from_template.py accepts exactly one
     # match, no fallback). Its PLANS dict is the single source of truth; the

@@ -54,7 +54,7 @@
 #      100 searched FC mappings, 53 cache-enabled; 60 searched conv2d
 #      mappings) - only the breakdown's echoed capacity lines differ - BUT
 #      the field is structurally live (the cache simulator allocates from
-#      specs.cache_bytes, and the fig13/fig14 experiment pipelines
+#      specs.cache_bytes, and the fig15/fig16 experiment pipelines
 #      force-enable the cache), so the calibrated 32 KiB behind the
 #      reference results is kept.
 #    - Row 1 kB, bank 32 MB, burst 4 (= 16 lanes x 16 bit / 64-bit column):

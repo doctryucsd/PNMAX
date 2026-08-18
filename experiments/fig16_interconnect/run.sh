@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# experiments/fig14_interconnect/run.sh — Fig. 14: system-level sharing via
+# experiments/fig16_interconnect/run.sh — Fig. 16: system-level sharing via
 # host vs. inter-bank interconnect (grouped bars; latency + energy + footprint
 # normalized to the no-sharing reference).
 #
@@ -7,7 +7,7 @@
 #   default : full scale (2048-trace (b)-space pools, all 9 kernels)
 #   --smoke : minutes-long end-to-end check (8-trace pools, all 9 kernels —
 #             the evaluator requires every kernel cell)
-# Writes only under the results root (shared pool + fig14_interconnect/).
+# Writes only under the results root (shared pool + fig16_interconnect/).
 #
 # Pipeline: (1) UniNDP baselines + streaming-mode (b)-space search pools for
 # all 9 kernels x {UPMEM, HBM-PIM}, (2) the figure's own evaluation loop
@@ -20,19 +20,19 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=../_lib/common.sh
 . "${SCRIPT_DIR}/../_lib/common.sh"
 
-pnmax_init "fig14_interconnect" "$@"
-phase_banner "fig14_interconnect — Fig. 14: via-host vs inter-bank sharing"
+pnmax_init "fig16_interconnect" "$@"
+phase_banner "fig16_interconnect — Fig. 16: via-host vs inter-bank sharing"
 
 # shellcheck source=../_lib/pipeline.sh
 . "${SCRIPT_DIR}/../_lib/pipeline.sh"
 
 # ---------------------------------------------------------------------------
 # Experiment defaults (single block). Arch basis:
-# Fig 14 evaluates data/archs/lowered/interconnect_sweep/** with
+# Fig 16 evaluates data/archs/lowered/interconnect_sweep/** with
 # --host-cost congested (the center file's b2b already bakes in the 16x
 # congested-host degradation = 1152) — those paths are hardcoded in
 # plot/bspace_interconnect_sharing_bars.py.
-# The mapping pools are searched on the BASE baselines (shared with Fig 9).
+# The mapping pools are searched on the BASE baselines (shared with Fig 10).
 # ---------------------------------------------------------------------------
 FULL_NUM_TRACES=2048
 SMOKE_NUM_TRACES=8
@@ -79,7 +79,7 @@ run_py python "${REPO_ROOT}/plot/bspace_interconnect_sharing_bars.py" \
   "${PLOT_FLAGS[@]}" \
   --search-root "${SEARCH_POOL_ROOT}/no_streaming_false" \
   --workers "${PNMAX_WORKERS}" \
-  --output "${RESULTS_DIR}/figures/fig14.pdf"
+  --output "${RESULTS_DIR}/figures/fig16.pdf"
 step_end
 
-phase_banner "fig14_interconnect done — figures: ${RESULTS_DIR}/figures"
+phase_banner "fig16_interconnect done — figures: ${RESULTS_DIR}/figures"

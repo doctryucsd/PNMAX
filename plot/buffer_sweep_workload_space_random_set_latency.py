@@ -14,7 +14,12 @@ from matplotlib.ticker import FuncFormatter
 
 OUTPUT_DIRNAME = "plots"
 OUTPUT_FILENAME = "selected_mappings.pdf"
-# Fig. 13 layout: latency-only single panel. The optional --with-energy
+# Fig. 15 shows the published line set: the UniNDP baseline row is eval-stage
+# metadata, not a plotted line, and labels drop the internal "(+ cache)"
+# qualifier.
+EXCLUDED_LINE_KINDS = frozenset({"baseline"})
+LINE_LABEL_DROPPED_SUFFIX = " (+ cache)"
+# Fig. 15 layout: latency-only single panel. The optional --with-energy
 # layout stacks an energy panel below.
 FIGSIZE: tuple[float, float] = (7.2, 2.6)
 FIGSIZE_WITH_ENERGY: tuple[float, float] = (7.2, 4.6)
@@ -89,7 +94,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help=(
             "Also render the normalized-energy panel below the latency panel "
-            "(2-panel layout). Default is the latency-only Fig. 13 layout."
+            "(2-panel layout). Default is the latency-only Fig. 15 layout."
         ),
     )
     parser.add_argument(
@@ -228,6 +233,9 @@ def _load_plot_rows(
         reader = csv.DictReader(fh)
         for row in reader:
             try:
+                line_kind = str(row["line_kind"]).strip()
+                if line_kind in EXCLUDED_LINE_KINDS:
+                    continue
                 line_id = str(row["line_id"]).strip()
                 variant_id = str(row["variant_id"]).strip()
                 buffer_bytes = int(row["buffer_bytes"])
@@ -235,9 +243,11 @@ def _load_plot_rows(
                     PlotRow(
                         set_id=int(row["set_id"]),
                         line_order=int(row["line_order"]),
-                        line_kind=str(row["line_kind"]).strip(),
+                        line_kind=line_kind,
                         line_id=line_id,
-                        line_label=str(row["line_label"]).strip(),
+                        line_label=str(row["line_label"])
+                        .strip()
+                        .removesuffix(LINE_LABEL_DROPPED_SUFFIX),
                         variant_order=int(row["variant_order"]),
                         variant_id=variant_id,
                         variant_label=str(row["variant_label"]).strip(),
@@ -477,7 +487,9 @@ def main() -> int:
     raw_selected_topk = summary.get("selected_topk", 3)
     expected_line_count = None
     try:
-        expected_line_count = int(raw_selected_topk) + 2
+        # top-k change lines + the best-latency line (the baseline row is
+        # excluded at load).
+        expected_line_count = int(raw_selected_topk) + 1
     except (TypeError, ValueError):
         expected_line_count = None
 
@@ -490,7 +502,7 @@ def main() -> int:
             2, 1, sharex=True, figsize=FIGSIZE_WITH_ENERGY
         )
     else:
-        # Fig. 13 layout: latency-only single panel.
+        # Fig. 15 layout: latency-only single panel.
         fig, ax_lat = plt.subplots(figsize=FIGSIZE)
         ax_energy = None
     _plot_selected_mappings(

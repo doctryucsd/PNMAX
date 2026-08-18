@@ -62,9 +62,9 @@ produce byte-identical CSVs, `lookup_work/` trees, and arch YAMLs.
 - `data/archs/lowered/baseline/` — the three hand-lowered baseline archs
   (lowered from the GPAM specs in `data/archs/baseline/`; verified by the
   `gpam-lower --check` gate, not produced by the builders here).
-- `data/archs/lowered/activation/` — fig15's frozen characterization
+- `data/archs/lowered/activation/` — fig17's frozen characterization
   inputs: the activation eval archs have no in-repo generator, and the
-  fig15 search arch is pinned beside them
+  fig17 search arch is pinned beside them
   (`activation/search_base/`) at the same vintage.
 
 ## Generators in this folder

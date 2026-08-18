@@ -1256,7 +1256,7 @@ def _make_eval_executor(eval_workers: int):
 # broken when a worker dies in the wrong window; the untimed wait() used here
 # previously turned that into a permanent silent hang of the whole pipeline.
 # The stall limit must comfortably exceed the slowest legitimate single task
-# (the worst observed fig12 eval task ran ~405 s).
+# (the worst observed fig14 eval task ran ~405 s).
 _EVAL_POOL_STALL_ENV = "PNMAX_EVAL_POOL_STALL_S"
 _EVAL_POOL_RESTARTS_ENV = "PNMAX_EVAL_POOL_RESTARTS"
 _DEFAULT_EVAL_POOL_STALL_S = 900.0

@@ -9,7 +9,7 @@ end-to-end best-latency metric per geometry -- exactly the original Fig-11 metho
 single-step rungs the original had are available (the /4, x4, burst-1, burst-16
 extremes were never searched for OPT), so each panel shows 3 rungs.
 
-Output: results/fig12_geometry/geometry_sweep_abc_opt_{line,bar}.pdf
+Output: results/fig14_geometry/geometry_sweep_abc_opt_{line,bar}.pdf
 """
 
 import argparse
@@ -71,7 +71,7 @@ def load_cache():
 
 REPO_ROOT = Path(os.environ.get("PNMAX_ROOT", Path(__file__).resolve().parents[1]))
 RESULTS_ROOT = Path(os.environ.get("PNMAX_RESULTS_ROOT", str(REPO_ROOT / "results")))
-DEFAULT_RESULTS_DIR = RESULTS_ROOT / "fig12_geometry"
+DEFAULT_RESULTS_DIR = RESULTS_ROOT / "fig14_geometry"
 
 # OPT-2.7B layer multiplicities are read from the shipped end-to-end workload
 # manifest (the authority on the model's layer decomposition), in its

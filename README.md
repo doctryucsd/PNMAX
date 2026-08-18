@@ -22,11 +22,11 @@ to the random seed, but the conclusions hold.
 - C++ toolchain (gcc/g++, CMake) for the external simulators
   (AttAcc/Ramulator2, CACTI)
 - No GPU
-- git, ninja and clang/clang++ for the CINM baseline in Fig. 9, which
+- git, ninja and clang/clang++ for the CINM baseline in Fig. 10, which
   `make setup` builds by default (clang required — g++ rejects a CINM template;
   see `external/cinm/PROVENANCE.md`). This is a large download and a long LLVM
   build: ~5 min on the 64-core reference machine, hours on small ones. Run
-  `make setup-nocinm` to skip it (Fig. 9 then renders without the CINM
+  `make setup-nocinm` to skip it (Fig. 10 then renders without the CINM
   markers via `PNMAX_SKIP_CINM=1`).
 - For full-scale runs a many-core machine is strongly recommended. Runs are
   pinned to 64 workers by default; the reference machine is a
@@ -52,27 +52,29 @@ pipeline end-to-end at smoke scale in about 12 minutes.
 ## Reproducing the paper results
 
 Each result is one `make` target. Run `make` with no target to list them.
+Figure numbers match the paper. Figs. 9 and 13 are measurement-analysis
+figures with no experiment pipeline, so there is no `make fig9` or `make fig13`.
 
 ```bash
-make fig9              # full scale
-make fig9 SMOKE=1      # minutes-scale end-to-end check
-make fig9 ARGS=--dry-run   # print the command plan, run nothing
+make fig10              # full scale
+make fig10 SMOKE=1      # minutes-scale end-to-end check
+make fig10 ARGS=--dry-run   # print the command plan, run nothing
 make all               # the whole campaign in one command
 ```
 
-`make all` takes **~15 h** at the default 64 workers. It runs `fig9` before
+`make all` takes **~15 h** at the default 64 workers. It runs `fig10` before
 the figures that reuse its mapping pool.
 
 | Check point | Command | Result | Full-scale runtime |
 |---|---|---|---|
-| 1 | `make fig9` | Fig. 9 — mapping-DSE Pareto fronts vs. UniNDP/OptiPIM/CINM baselines | ~6.5 h (builds the shared pool reused by Figs 10/11/13/14) |
+| 1 | `make fig10` | Fig. 10 — mapping-DSE Pareto fronts vs. UniNDP/OptiPIM/CINM baselines | ~6.5 h (builds the shared pool reused by Figs 11/12/15/16) |
 | 2 | `make fig8` | Fig. 8 + Table 4 — analytical model vs. UniNDP/AttAcc simulators (R^2, speedups) | ~5 min |
-| 3 | `make fig10` | Fig. 10 — impact of disabling streaming (footprint/latency) | <1 min after fig9 |
-| 4 | `make fig11` | Fig. 11 — latency breakdown of best-latency HBM-PIM mappings | ~1 min after fig9 |
-| 5 | `make fig12` | Fig. 12 — DRAM geometry sweeps (OPT-2.7B on UPMEM + HBM-PIM) | ~6.5 h |
-| 6 | `make fig13` | Fig. 13 — buffer-size sensitivity (fc_bert-72 on HBM-PIM) | <1 min after fig9 (~10 min cold) |
-| 7 | `make fig14` | Fig. 14 — system-level sharing via host vs. inter-bank interconnect | <1 min after fig9 (~30 min cold) |
-| 8 | `make fig15` | Fig. 15 — reduction placement (bank/channel/base-die) | ~1.6 h |
+| 3 | `make fig11` | Fig. 11 — impact of disabling streaming (footprint/latency) | <1 min after fig10 |
+| 4 | `make fig12` | Fig. 12 — latency breakdown of best-latency HBM-PIM mappings | ~1 min after fig10 |
+| 5 | `make fig14` | Fig. 14 — DRAM geometry sweeps (OPT-2.7B on UPMEM + HBM-PIM) | ~6.5 h |
+| 6 | `make fig15` | Fig. 15 — buffer-size sensitivity (fc_bert-72 on HBM-PIM) | <1 min after fig10 (~10 min cold) |
+| 7 | `make fig16` | Fig. 16 — system-level sharing via host vs. inter-bank interconnect | <1 min after fig10 (~30 min cold) |
+| 8 | `make fig17` | Fig. 17 — reduction placement (bank/channel/base-die) | ~1.6 h |
 | 9 | `make attacc_area` | AttAcc PU+buffer area overhead from the PPA DB | <10 s |
 
 - Each target wraps `experiments/<name>/run.sh`. `ARGS="..."` forwards flags

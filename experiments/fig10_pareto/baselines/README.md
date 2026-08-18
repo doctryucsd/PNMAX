@@ -1,6 +1,6 @@
-# Fig. 9 baselines (UniNDP / OptiPIM / CINM)
+# Fig. 10 baselines (UniNDP / OptiPIM / CINM)
 
-The Fig. 9 Pareto grid (R3) compares PNMAX-searched mappings against three
+The Fig. 10 Pareto grid (R3) compares PNMAX-searched mappings against three
 external baselines. This directory holds the drivers that produce the OptiPIM and
 CINM comparison points; the UniNDP baseline mappings are derived separately (see
 `external/unindp/derive_baselines.md`).
@@ -34,18 +34,18 @@ latency+footprint+energy cost), normalized to the same per-workload
   `PNMAX_RESULTS_ROOT`, default `<repo>/results`),
 - re-costs each on the PNMAX analytical model (`data/archs/lowered/baseline/hbm_pim.yaml`,
   override `--arch-file`),
-- emits `results/fig09_pareto/optipim/optipim_proxy.csv` (override `--output`).
+- emits `results/fig10_pareto/optipim/optipim_proxy.csv` (override `--output`).
 
 ## CINM baseline (two approaches, UPMEM subfigures)
 
 Both use the in-repo `cinm-opt` built by `setup.sh` by default
 (`external/cinm/build/bin/cinm-opt`); override with the `CINM_OPT` env var.
 
-- **`cinm_approach_a.py` (Approach A, used for Fig. 9):** emit each kernel as a
+- **`cinm_approach_a.py` (Approach A, used for Fig. 10):** emit each kernel as a
   `cinm.compute` GEMM, run `cinm-opt --cinm-tiling`, parse CINM's tile
   decomposition, and re-cost that mapping on the PNMAX model (UPMEM-normalized).
   Kernel shapes come from the derived UniNDP-baseline `<wl>_upmem.yaml`
-  (env `PNMAX_UNINDP_BASELINE_DIR`); writes `.../fig09_pareto/cinm/cinm_proxy.csv`.
+  (env `PNMAX_UNINDP_BASELINE_DIR`); writes `.../fig10_pareto/cinm/cinm_proxy.csv`.
 - **`cinm_solution_on_our_model.py` (Approach B):** evaluate CINM's own
   `testbench/*.mlir` solutions (which encode a fixed `workgroupShape`) on the
   PNMAX model, cross-checked against the real-UPMEM HW numbers from CINM's
@@ -63,4 +63,4 @@ The `cinm-opt` binary is Cinnamon `f776a07` built against public LLVM 18.1.6 —
 | `PNMAX_UPMEM_ARCH` | UPMEM baseline arch YAML | `<repo>/data/archs/lowered/baseline/upmem.yaml` |
 | `PNMAX_RESULTS_ROOT` | DSE results root | `<repo>/results` |
 | `PNMAX_UNINDP_BASELINE_DIR` | derived UniNDP-baseline dir | `<repo>/results/unindp_baseline` |
-| `PNMAX_CINM_OUT` | CINM proxy output dir | `<results>/fig09_pareto/cinm` |
+| `PNMAX_CINM_OUT` | CINM proxy output dir | `<results>/fig10_pareto/cinm` |
